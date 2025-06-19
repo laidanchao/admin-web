@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const USER_BASE_URL = "/api/v1/users";
+const USER_BASE_URL = "/api/sys/user";
 
 const UserAPI = {
   /**
@@ -209,13 +209,16 @@ export default UserAPI;
 /** 登录用户信息 */
 export interface UserInfo {
   /** 用户ID */
-  userid?: string;
+  id: number;
 
   /** 用户名 */
-  username?: string;
+  username: string;
+
+  /** 工号 */
+  userNo: string;
 
   /** 昵称 */
-  nickname?: string;
+  nickname: string;
 
   /** 头像URL */
   avatar?: string;

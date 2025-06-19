@@ -20,8 +20,7 @@ export const useUserStore = defineStore("user", () => {
     return new Promise<void>((resolve, reject) => {
       AuthAPI.login(loginData)
         .then((data) => {
-          const { accessToken } = data;
-          setAccessToken(accessToken);
+          setAccessToken(data);
           resolve();
         })
         .catch((error) => {

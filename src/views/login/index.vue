@@ -17,30 +17,7 @@
     <div class="login-form">
       <el-form ref="loginFormRef" :model="loginFormData" :rules="loginRules">
         <div class="form-title">
-          <h2>{{ defaultSettings.title }}</h2>
-          <el-dropdown style="position: absolute; right: 0">
-            <div class="cursor-pointer">
-              <el-icon>
-                <arrow-down />
-              </el-icon>
-            </div>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item>
-                  <el-tag>{{ defaultSettings.version }}</el-tag>
-                </el-dropdown-item>
-                <el-dropdown-item @click="setLoginCredentials('root', '123456')">
-                  超级管理员：root/123456
-                </el-dropdown-item>
-                <el-dropdown-item @click="setLoginCredentials('admin', '123456')">
-                  系统管理员：admin/123456
-                </el-dropdown-item>
-                <el-dropdown-item @click="setLoginCredentials('test', '123456')">
-                  测试小游客：test/123456
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <h2>后台管理</h2>
         </div>
 
         <!-- 用户名 -->
@@ -82,30 +59,6 @@
           </el-form-item>
         </el-tooltip>
 
-        <!-- 验证码 -->
-        <el-form-item prop="captchaCode">
-          <div class="input-wrapper">
-            <div class="i-svg:captcha mx-2" />
-
-            <el-input
-              v-model="loginFormData.captchaCode"
-              auto-complete="off"
-              size="large"
-              class="flex-1"
-              placeholder="验证码"
-              @keyup.enter="handleLoginSubmit"
-            />
-
-            <el-image :src="captchaBase64" class="captcha-img" @click="getCaptcha" />
-          </div>
-        </el-form-item>
-
-        <div class="flex-x-between w-full py-1">
-          <el-checkbox>记住我</el-checkbox>
-
-          <el-link type="primary" href="/forget-password">忘记密码</el-link>
-        </div>
-
         <!-- 登录按钮 -->
         <el-button
           :loading="loading"
@@ -137,7 +90,6 @@ import router from "@/router";
 
 import type { FormInstance } from "element-plus";
 
-import defaultSettings from "@/settings";
 import { ThemeMode } from "@/enums/settings/theme.enum";
 
 import { useSettingsStore, useUserStore } from "@/store";
@@ -151,13 +103,10 @@ const loginFormRef = ref<FormInstance>();
 const isDark = ref(settingsStore.theme === ThemeMode.DARK); // 是否暗黑模式
 const loading = ref(false); // 按钮 loading 状态
 const isCapslock = ref(false); // 是否大写锁定
-const captchaBase64 = ref(); // 验证码图片Base64字符串
 
 const loginFormData = ref<LoginFormData>({
-  username: "admin",
-  password: "123456",
-  captchaKey: "",
-  captchaCode: "",
+  username: "laidanchao",
+  password: "123123",
 });
 
 const loginRules = computed(() => {
@@ -181,23 +130,8 @@ const loginRules = computed(() => {
         trigger: "blur",
       },
     ],
-    captchaCode: [
-      {
-        required: true,
-        trigger: "blur",
-        message: "请输入验证码",
-      },
-    ],
   };
 });
-
-// 获取验证码
-function getCaptcha() {
-  AuthAPI.getCaptcha().then((data) => {
-    loginFormData.value.captchaKey = data.captchaKey;
-    captchaBase64.value = data.captchaBase64;
-  });
-}
 
 // 登录
 async function handleLoginSubmit() {
@@ -213,8 +147,8 @@ async function handleLoginSubmit() {
           console.log("跳转到登录前的页面", path, queryParams);
           router.push({ path: path, query: queryParams });
         })
-        .catch(() => {
-          getCaptcha();
+        .catch((e) => {
+          console.log(e);
         })
         .finally(() => {
           loading.value = false;
@@ -259,16 +193,6 @@ function checkCapslock(event: KeyboardEvent) {
     isCapslock.value = event.getModifierState("CapsLock");
   }
 }
-
-// 设置登录凭证
-const setLoginCredentials = (username: string, password: string) => {
-  loginFormData.value.username = username;
-  loginFormData.value.password = password;
-};
-
-onMounted(() => {
-  getCaptcha();
-});
 </script>
 
 <style lang="scss" scoped>
@@ -332,13 +256,6 @@ onMounted(() => {
       display: flex;
       align-items: center;
       width: 100%;
-    }
-
-    .captcha-img {
-      height: 48px;
-      cursor: pointer;
-      border-top-right-radius: 6px;
-      border-bottom-right-radius: 6px;
     }
   }
 

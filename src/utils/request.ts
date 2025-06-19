@@ -1,7 +1,6 @@
 import axios, { type InternalAxiosRequestConfig, type AxiosResponse } from "axios";
 import qs from "qs";
 import { useUserStoreHook } from "@/store/modules/user.store";
-import { ResultCode } from "@/enums/common/result.enum";
 import { getAccessToken } from "@/utils/auth";
 
 // 创建 axios 实例
@@ -34,21 +33,14 @@ service.interceptors.response.use(
     if (response.config.responseType === "blob") {
       return response;
     }
-
-    const { code, data, msg } = response.data;
-    if (code === ResultCode.SUCCESS) {
-      return data;
-    }
-
-    ElMessage.error(msg || "系统出错");
-    return Promise.reject(new Error(msg || "Error"));
+    return response.data;
   },
   async (error: any) => {
+    console.log(error);
     // 非 2xx 状态码处理 401、403、500 等
     const response = error.response;
     if (response) {
-      const { code, msg } = response.data;
-      if (code === ResultCode.ACCESS_TOKEN_INVALID) {
+      if (response.status === 401) {
         ElMessageBox.confirm("当前页面已失效，请重新登录", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
@@ -60,7 +52,7 @@ service.interceptors.response.use(
           });
         });
       } else {
-        ElMessage.error(msg || "系统出错");
+        ElMessage.error(response.data.message || "系统出错");
       }
     }
     return Promise.reject(error.message);

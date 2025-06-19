@@ -1,34 +1,14 @@
 import request from "@/utils/request";
 
-const AUTH_BASE_URL = "/api/v1/auth";
+const AUTH_BASE_URL = "/api/auth";
 
 const AuthAPI = {
   /** 登录接口*/
   login(data: LoginFormData) {
-    const formData = new FormData();
-    formData.append("username", data.username);
-    formData.append("password", data.password);
-    formData.append("captchaKey", data.captchaKey);
-    formData.append("captchaCode", data.captchaCode);
-    return request<any, LoginResult>({
+    return request<any, string>({
       url: `${AUTH_BASE_URL}/login`,
       method: "post",
-      data: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-  },
-
-  /** 刷新 token 接口*/
-  refreshToken(refreshToken: string) {
-    return request<any, LoginResult>({
-      url: `${AUTH_BASE_URL}/refresh-token`,
-      method: "post",
-      data: { refreshToken: refreshToken },
-      headers: {
-        Authorization: "no-auth",
-      },
+      data,
     });
   },
 
@@ -37,14 +17,6 @@ const AuthAPI = {
     return request({
       url: `${AUTH_BASE_URL}/logout`,
       method: "delete",
-    });
-  },
-
-  /** 获取验证码接口*/
-  getCaptcha() {
-    return request<any, CaptchaResult>({
-      url: `${AUTH_BASE_URL}/captcha`,
-      method: "get",
     });
   },
 };
@@ -57,10 +29,6 @@ export interface LoginFormData {
   username: string;
   /** 密码 */
   password: string;
-  /** 验证码缓存key */
-  captchaKey: string;
-  /** 验证码 */
-  captchaCode: string;
 }
 
 /** 登录响应 */
