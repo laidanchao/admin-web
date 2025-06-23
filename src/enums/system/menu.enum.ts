@@ -3,7 +3,7 @@ export enum MenuTypeEnum {
   CATALOG = 2, // 目录
   MENU = 1, // 菜单
   BUTTON = 3, // 按钮
-  EXTLINK = 4, // 外链
+  LINK = 4, // 外链
 }
 
 // 类型标签映射配置
@@ -26,7 +26,7 @@ export const MenuTypeConfig = {
     icon: "mouse",
     value: 3,
   },
-  [MenuTypeEnum.EXTLINK]: {
+  [MenuTypeEnum.LINK]: {
     label: "外链",
     type: "info" as const,
     icon: "link",

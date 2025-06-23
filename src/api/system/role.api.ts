@@ -106,25 +106,24 @@ export interface RolePageQuery extends PageQuery {
 /** 角色分页对象 */
 export interface RolePageVO {
   /** 角色编码 */
-  code?: string;
+  code: string;
   /** 角色ID */
-  id?: string;
+  id: number;
   /** 角色名称 */
-  name?: string;
+  name: string;
   /** 排序 */
-  sort?: number;
-  /** 角色状态 */
-  status?: number;
+  description?: string;
   /** 创建时间 */
-  createTime?: Date;
+  createdAt: Date;
   /** 修改时间 */
-  updateTime?: Date;
+  updatedAt?: Date;
+  sort?: number;
 }
 
 /** 角色表单对象 */
 export interface RoleForm {
   /** 角色ID */
-  id?: string;
+  id?: number;
   /** 角色编码 */
   code?: string;
   /** 数据权限 */

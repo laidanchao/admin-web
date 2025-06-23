@@ -1,8 +1,15 @@
 import request from "@/utils/request";
 
-const DEPT_BASE_URL = "/api/v1/dept";
+const DEPT_BASE_URL = "/api/sys/dept";
 
 const DeptAPI = {
+  getFullTree() {
+    return request<any, OptionType[]>({
+      url: `${DEPT_BASE_URL}/getFullTree`,
+      method: "get",
+    });
+  },
+
   /**
    * 获取部门列表
    *
@@ -95,22 +102,20 @@ export interface DeptQuery {
 export interface DeptVO {
   /** 子部门 */
   children?: DeptVO[];
-  /** 创建时间 */
-  createTime?: Date;
   /** 部门ID */
   id?: string;
   /** 部门名称 */
   name?: string;
   /** 部门编号 */
-  code?: string;
+  // code?: string;
   /** 父部门ID */
-  parentid?: string;
+  parentid?: number;
   /** 排序 */
   sort?: number;
-  /** 状态(1:启用；0:禁用) */
-  status?: number;
+  /** 创建时间 */
+  createdAt?: Date;
   /** 修改时间 */
-  updateTime?: Date;
+  updatedAt?: Date;
 }
 
 /** 部门表单类型 */

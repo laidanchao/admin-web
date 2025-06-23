@@ -99,8 +99,8 @@
                 <DictLabel v-model="scope.row.gender" code="gender" />
               </template>
             </el-table-column>
-            <el-table-column label="部门" width="120" align="center" prop="deptName" />
-            <el-table-column label="手机号码" align="center" prop="mobile" width="120" />
+            <el-table-column label="部门" width="120" align="center" prop="dept.name" />
+            <el-table-column label="手机号码" align="center" prop="phone" width="120" />
             <el-table-column label="邮箱" align="center" prop="email" width="160" />
             <el-table-column label="状态" align="center" prop="status" width="80">
               <template #default="scope">
@@ -149,8 +149,8 @@
           <pagination
             v-if="total > 0"
             v-model:total="total"
-            v-model:page="queryParams.pageNum"
-            v-model:limit="queryParams.pageSize"
+            v-model:page="queryParams.page"
+            v-model:limit="queryParams.limit"
             @pagination="handleQuery"
           />
         </el-card>
@@ -203,8 +203,8 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="手机号码" prop="mobile">
-          <el-input v-model="formData.mobile" placeholder="请输入手机号码" maxlength="11" />
+        <el-form-item label="手机号码" prop="phone">
+          <el-input v-model="formData.phone" placeholder="请输入手机号码" maxlength="11" />
         </el-form-item>
 
         <el-form-item label="邮箱" prop="email">
@@ -253,8 +253,9 @@ const queryFormRef = ref();
 const userFormRef = ref();
 
 const queryParams = reactive<UserPageQuery>({
-  pageNum: 1,
-  pageSize: 10,
+  page: 1,
+  limit: 10,
+  join: "dept||name",
 });
 
 const pageData = ref<UserPageVO[]>();
@@ -304,9 +305,10 @@ const importDialogVisible = ref(false);
 function handleQuery() {
   loading.value = true;
   UserAPI.getPage(queryParams)
-    .then((data) => {
-      pageData.value = data.list;
-      total.value = data.total;
+    .then((response) => {
+      console.log(response);
+      pageData.value = response.data;
+      total.value = response.total;
     })
     .finally(() => {
       loading.value = false;
@@ -316,7 +318,7 @@ function handleQuery() {
 // 重置查询
 function handleResetQuery() {
   queryFormRef.value.resetFields();
-  queryParams.pageNum = 1;
+  queryParams.page = 1;
   queryParams.deptId = undefined;
   queryParams.createTime = undefined;
   handleQuery();
@@ -338,9 +340,9 @@ function hancleResetPassword(row: UserPageVO) {
         ElMessage.warning("密码至少需要6位字符，请重新输入");
         return false;
       }
-      UserAPI.resetPassword(row.id, value).then(() => {
-        ElMessage.success("密码重置成功，新密码是：" + value);
-      });
+      // UserAPI.resetPassword(row.id, value).then(() => {
+      //   ElMessage.success("密码重置成功，新密码是：" + value);
+      // });
     },
     () => {
       ElMessage.info("已取消重置密码");

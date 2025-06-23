@@ -3,9 +3,11 @@ import { constantRoutes } from "@/router";
 import { store } from "@/store";
 import router from "@/router";
 
-import MenuAPI, { type RouteVO } from "@/api/system/menu.api";
-const modules = import.meta.glob("../../views/**/**.vue");
-const Layout = () => import("@/layout/index.vue");
+import { MenuVO } from "@/api/system/menu.api";
+import UserAPI from "@/api/system/user.api";
+import { dynamicRoutes } from "@/router/dynamic-routes";
+// const modules = import.meta.glob("../../views/**/**.vue");
+// const Layout = () => import("@/layout/index.vue");
 
 export const usePermissionStore = defineStore("permission", () => {
   // 储所有路由，包括静态路由和动态路由
@@ -22,12 +24,13 @@ export const usePermissionStore = defineStore("permission", () => {
    */
   function generateRoutes() {
     return new Promise<RouteRecordRaw[]>((resolve, reject) => {
-      MenuAPI.getRoutes()
+      UserAPI.getMenus()
         .then((data) => {
-          const dynamicRoutes = parseDynamicRoutes(data);
-          routes.value = [...constantRoutes, ...dynamicRoutes];
+          const dyRoutes = parseDynamicRoutes(dynamicRoutes, data);
+          console.log(dyRoutes);
+          routes.value = [...constantRoutes, ...dyRoutes];
           isRoutesLoaded.value = true;
-          resolve(dynamicRoutes);
+          resolve(dyRoutes);
         })
         .catch((error) => {
           reject(error);
@@ -80,27 +83,43 @@ export const usePermissionStore = defineStore("permission", () => {
  * @param rawRoutes 后端返回的原始路由数据
  * @returns 解析后的路由配置数组
  */
-const parseDynamicRoutes = (rawRoutes: RouteVO[]): RouteRecordRaw[] => {
+const parseDynamicRoutes = (routes: RouteRecordRaw[], menus: MenuVO[]): RouteRecordRaw[] => {
   const parsedRoutes: RouteRecordRaw[] = [];
+  routes.forEach((route: RouteRecordRaw) => {
+    const menu = menus.find((f) => f.path === route.name);
+    let normalizedRoute: RouteRecordRaw;
 
-  rawRoutes.forEach((route) => {
-    const normalizedRoute = { ...route } as RouteRecordRaw;
+    if (menu) {
+      normalizedRoute = {
+        ...route,
+        meta: {
+          icon: menu.icon,
+          title: menu.name,
+        },
+      };
+    } else {
+      normalizedRoute = {
+        ...route,
+        meta: {
+          hidden: true,
+        },
+      };
+    }
 
-    // 处理组件路径
-    normalizedRoute.component =
-      normalizedRoute.component?.toString() === "Layout"
-        ? Layout
-        : modules[`../../views/${normalizedRoute.component}.vue`] ||
-          modules["../../views/error-page/404.vue"];
+    // // 处理组件路径
+    // normalizedRoute.component =
+    //   normalizedRoute.component?.toString() === "Layout"
+    //     ? Layout
+    //     : modules[`../../views/${normalizedRoute.component}.vue`] ||
+    //       modules["../../views/error-page/404.vue"];
 
     // 递归解析子路由
     if (normalizedRoute.children) {
-      normalizedRoute.children = parseDynamicRoutes(route.children);
+      normalizedRoute.children = parseDynamicRoutes(route.children || [], menus);
     }
 
     parsedRoutes.push(normalizedRoute);
   });
-
   return parsedRoutes;
 };
 /**

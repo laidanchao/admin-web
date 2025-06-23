@@ -1,4 +1,7 @@
 import request from "@/utils/request";
+import { MenuVO } from "./menu.api";
+import { RolePageVO } from "./role.api";
+import { DeptVO } from "./dept.api";
 
 const USER_BASE_URL = "/api/sys/user";
 
@@ -15,6 +18,13 @@ const UserAPI = {
     });
   },
 
+  getMenus() {
+    return request<any, MenuVO[]>({
+      url: `${USER_BASE_URL}/getMenus`,
+      method: "get",
+    });
+  },
+
   /**
    * 获取用户分页列表
    *
@@ -22,7 +32,7 @@ const UserAPI = {
    */
   getPage(queryParams: UserPageQuery) {
     return request<any, PageResult<UserPageVO[]>>({
-      url: `${USER_BASE_URL}/page`,
+      url: `${USER_BASE_URL}`,
       method: "get",
       params: queryParams,
     });
@@ -224,7 +234,7 @@ export interface UserInfo {
   avatar?: string;
 
   /** 角色 */
-  roles: string[];
+  roles: RolePageVO[];
 
   /** 权限 */
   perms: string[];
@@ -243,6 +253,7 @@ export interface UserPageQuery extends PageQuery {
   /** 部门ID */
   deptId?: string;
 
+  join?: string;
   /** 开始时间 */
   createTime?: [string, string];
 }
@@ -250,19 +261,20 @@ export interface UserPageQuery extends PageQuery {
 /** 用户分页对象 */
 export interface UserPageVO {
   /** 用户ID */
-  id: string;
+  id: number;
   /** 用户头像URL */
   avatar?: string;
   /** 创建时间 */
-  createTime?: Date;
+  createdAt?: Date;
   /** 部门名称 */
-  deptName?: string;
+  // deptName?: string;
   /** 用户邮箱 */
   email?: string;
+  userNo?: string;
   /** 性别 */
-  gender?: number;
+  // gender?: number;
   /** 手机号 */
-  mobile?: string;
+  phone?: string;
   /** 用户昵称 */
   nickname?: string;
   /** 角色名称，多个使用英文逗号(,)分割 */
@@ -271,6 +283,8 @@ export interface UserPageVO {
   status?: number;
   /** 用户名 */
   username?: string;
+
+  depts: DeptVO[];
 }
 
 /** 用户表单类型 */
@@ -286,7 +300,7 @@ export interface UserForm {
   /** 用户ID */
   id?: string;
   /** 手机号 */
-  mobile?: string;
+  phone?: string;
   /** 昵称 */
   nickname?: string;
   /** 角色ID集合 */

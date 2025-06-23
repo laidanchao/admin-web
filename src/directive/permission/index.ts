@@ -16,22 +16,22 @@ export const hasPerm: Directive = {
       );
     }
 
-    const { roles, perms } = useUserStore().userInfo;
+    const { roles } = useUserStore().userInfo;
 
     // 超级管理员拥有所有权限
-    if (roles.includes("ROOT")) {
+    if (roles.some((s) => s.code === "ROOT")) {
       return;
     }
 
-    // 检查权限
-    const hasAuth = Array.isArray(requiredPerms)
-      ? requiredPerms.some((perm) => perms.includes(perm))
-      : perms.includes(requiredPerms);
+    // // 检查权限
+    // const hasAuth = Array.isArray(requiredPerms)
+    //   ? requiredPerms.some((perm) => perms.includes(perm))
+    //   : perms.includes(requiredPerms);
 
-    // 如果没有权限，移除该元素
-    if (!hasAuth && el.parentNode) {
-      el.parentNode.removeChild(el);
-    }
+    // // 如果没有权限，移除该元素
+    // if (!hasAuth && el.parentNode) {
+    //   el.parentNode.removeChild(el);
+    // }
   },
 };
 
@@ -49,16 +49,16 @@ export const hasRole: Directive = {
       );
     }
 
-    const { roles } = useUserStore().userInfo;
+    // const { roles } = useUserStore().userInfo;
 
-    // 检查是否有对应角色权限
-    const hasAuth = Array.isArray(requiredRoles)
-      ? requiredRoles.some((role) => roles.includes(role))
-      : roles.includes(requiredRoles);
+    // // 检查是否有对应角色权限
+    // const hasAuth = Array.isArray(requiredRoles)
+    //   ? requiredRoles.some((role) => roles.includes(role))
+    //   : roles.includes(requiredRoles);
 
-    // 如果没有权限，移除元素
-    if (!hasAuth && el.parentNode) {
-      el.parentNode.removeChild(el);
-    }
+    // // 如果没有权限，移除元素
+    // if (!hasAuth && el.parentNode) {
+    //   el.parentNode.removeChild(el);
+    // }
   },
 };

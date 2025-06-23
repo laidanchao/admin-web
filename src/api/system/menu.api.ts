@@ -1,6 +1,7 @@
+import { MenuTypeEnum } from "@/enums/system/menu.enum";
 import request from "@/utils/request";
 // 菜单基础URL
-const MENU_BASE_URL = "/api/v1/menus";
+const MENU_BASE_URL = "/api/sys/menus";
 
 const MenuAPI = {
   /**
@@ -108,33 +109,59 @@ export interface MenuQuery {
 }
 
 /** 菜单视图对象 */
+// export interface MenuVO {
+//   /** 子菜单 */
+//   children?: MenuVO[];
+//   /** 组件路径 */
+//   component?: string;
+//   /** ICON */
+//   icon?: string;
+//   /** 菜单ID */
+//   id?: string;
+//   /** 菜单名称 */
+//   name?: string;
+//   /** 父菜单ID */
+//   parentId?: string;
+//   /** 按钮权限标识 */
+//   perm?: string;
+//   /** 跳转路径 */
+//   redirect?: string;
+//   /** 路由名称 */
+//   routeName?: string;
+//   /** 路由相对路径 */
+//   routePath?: string;
+//   /** 菜单排序(数字越小排名越靠前) */
+//   sort?: number;
+//   /** 菜单 */
+//   type?: number;
+//   /** 菜单是否可见(1:显示;0:隐藏) */
+//   visible?: number;
+// }
+
 export interface MenuVO {
   /** 子菜单 */
   children?: MenuVO[];
   /** 组件路径 */
   component?: string;
+
+  /** 菜单ID */
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createBy: string;
+  updateBy: string;
+  /** 父菜单ID */
+  parentId?: number;
+  /** 菜单名称 */
+  name: string;
+  /** 菜单路径 */
+  path: string;
+  /** 菜单 */
+  type: string;
   /** ICON */
   icon?: string;
-  /** 菜单ID */
-  id?: string;
-  /** 菜单名称 */
-  name?: string;
-  /** 父菜单ID */
-  parentId?: string;
-  /** 按钮权限标识 */
-  perm?: string;
-  /** 跳转路径 */
-  redirect?: string;
-  /** 路由名称 */
-  routeName?: string;
-  /** 路由相对路径 */
-  routePath?: string;
   /** 菜单排序(数字越小排名越靠前) */
-  sort?: number;
-  /** 菜单 */
-  type?: number;
-  /** 菜单是否可见(1:显示;0:隐藏) */
-  visible?: number;
+  sort: number;
 }
 
 /** 菜单表单对象 */
@@ -174,6 +201,23 @@ export interface MenuForm {
 interface KeyValue {
   key: string;
   value: string;
+}
+
+export interface MenuTreeNode {
+  id: number;
+  // 父级菜单id
+  parentId?: number;
+  // 菜单名
+  name: string;
+  // 菜单路径
+  path: string;
+  // 菜单类型
+  type: MenuTypeEnum;
+  // 图标url
+  icon: string;
+  // 排序，越小越前面
+  sort: number;
+  children: MenuTreeNode[];
 }
 
 /** RouteVO，路由对象 */
