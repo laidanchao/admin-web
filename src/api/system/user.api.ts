@@ -251,11 +251,13 @@ export interface UserPageQuery extends PageQuery {
   status?: number;
 
   /** 部门ID */
-  deptId?: string;
+  deptId?: number;
 
   join?: string;
   /** 开始时间 */
-  createTime?: [string, string];
+  createdAt?: [string, string];
+
+  s: { deptId?: number };
 }
 
 /** 用户分页对象 */

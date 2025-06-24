@@ -8,7 +8,20 @@ const service = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API,
   timeout: 50000,
   headers: { "Content-Type": "application/json;charset=utf-8" },
-  paramsSerializer: (params) => qs.stringify(params),
+  paramsSerializer: (params) => {
+    if (params.s) {
+      // 手动处理嵌套对象 s
+      const flattenedParams = {
+        ...params,
+        s: JSON.stringify(params.s), // 将 s 对象转为 JSON 字符串
+      };
+      return qs.stringify(flattenedParams, {
+        indices: false, // 禁用数组索引格式
+      });
+    } else {
+      return qs.stringify(params);
+    }
+  },
 });
 
 // 请求拦截器

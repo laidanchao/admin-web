@@ -35,7 +35,7 @@
 
             <el-form-item label="创建时间">
               <el-date-picker
-                v-model="queryParams.createTime"
+                v-model="queryParams.createdAt"
                 :editable="false"
                 class="!w-[240px]"
                 type="daterange"
@@ -256,6 +256,7 @@ const queryParams = reactive<UserPageQuery>({
   page: 1,
   limit: 10,
   join: "dept||name",
+  s: { deptId: undefined },
 });
 
 const pageData = ref<UserPageVO[]>();
@@ -304,6 +305,9 @@ const importDialogVisible = ref(false);
 // 查询
 function handleQuery() {
   loading.value = true;
+  if (queryParams.deptId) {
+    queryParams.s.deptId = queryParams.deptId;
+  }
   UserAPI.getPage(queryParams)
     .then((response) => {
       console.log(response);
@@ -320,7 +324,7 @@ function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.page = 1;
   queryParams.deptId = undefined;
-  queryParams.createTime = undefined;
+  queryParams.createdAt = undefined;
   handleQuery();
 }
 
