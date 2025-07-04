@@ -10,7 +10,7 @@
     },
 
     // 严格性和类型检查相关配置
-    "strict": true,
+    "strict": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
 

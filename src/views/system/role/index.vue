@@ -220,8 +220,8 @@ const ids = ref<number[]>([]);
 const total = ref(0);
 
 const queryParams = reactive<RolePageQuery>({
-  pageNum: 1,
-  pageSize: 10,
+  page: 1,
+  limit: 10,
 });
 
 // 角色表格数据
@@ -235,10 +235,7 @@ const dialog = reactive({
   visible: false,
 });
 // 角色表单
-const formData = reactive<RoleForm>({
-  sort: 1,
-  status: 1,
-});
+const formData = reactive<RoleForm>();
 
 const rules = reactive({
   name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
@@ -263,7 +260,7 @@ const parentChildLinked = ref(true);
 // 查询
 function handleQuery() {
   loading.value = true;
-  RoleAPI.getPage(queryParams)
+  RoleAPI.getPageList(queryParams)
     .then((data) => {
       roleList.value = data.list;
       total.value = data.total;
@@ -276,7 +273,7 @@ function handleQuery() {
 // 重置查询
 function handleResetQuery() {
   queryFormRef.value.resetFields();
-  queryParams.pageNum = 1;
+  queryParams.page = 1;
   handleQuery();
 }
 

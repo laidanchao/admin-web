@@ -1,101 +1,129 @@
 import request from "@/utils/request";
+import { RequestQueryBuilder } from "@nestjsx/crud-request";
+import BaseApi from "../base.api";
 
-const ROLE_BASE_URL = "/api/v1/roles";
+const ROLE_BASE_URL = "/api/sys/role";
 
-const RoleAPI = {
-  /** 获取角色分页数据 */
-  getPage(queryParams?: RolePageQuery) {
-    return request<any, PageResult<RolePageVO[]>>({
-      url: `${ROLE_BASE_URL}/page`,
-      method: "get",
-      params: queryParams,
-    });
-  },
+class RoleAPI extends BaseApi {
+  constructor() {
+    super(ROLE_BASE_URL);
+  }
+}
 
-  /** 获取角色下拉数据源 */
-  getOptions() {
-    return request<any, OptionType[]>({
-      url: `${ROLE_BASE_URL}/options`,
-      method: "get",
-    });
-  },
-  /**
-   * 获取角色的菜单ID集合
-   *
-   * @param roleId 角色ID
-   * @returns 角色的菜单ID集合
-   */
-  getRoleMenuIds(roleId: string) {
-    return request<any, number[]>({
-      url: `${ROLE_BASE_URL}/${roleId}/menuIds`,
-      method: "get",
-    });
-  },
+export default new RoleAPI();
+// const RoleAPI = {
+//   /** 获取角色分页数据 */
+//   getPage(queryParams?: RolePageQuery) {
+//     return request<any, PageResult<RolePageVO[]>>({
+//       url: `${ROLE_BASE_URL}/page`,
+//       method: "get",
+//       params: queryParams,
+//     });
+//   },
 
-  /**
-   * 分配菜单权限
-   *
-   * @param roleId 角色ID
-   * @param data 菜单ID集合
-   */
-  updateRoleMenus(roleId: string, data: number[]) {
-    return request({
-      url: `${ROLE_BASE_URL}/${roleId}/menus`,
-      method: "put",
-      data: data,
-    });
-  },
+//   /** 获取角色下拉数据源 */
+//   getList(queryString: string) {
+//     //     const queryString = RequestQueryBuilder.create({
+//     //   fields: ["id", "name"],
+//     // }).query();
+//     return request<any, RolePageVO[]>({
+//       url: `${ROLE_BASE_URL}?${queryString}`,
+//       method: "get",
+//     });
+//   },
 
-  /**
-   * 获取角色表单数据
-   *
-   * @param id 角色ID
-   * @returns 角色表单数据
-   */
-  getFormData(id: string) {
-    return request<any, RoleForm>({
-      url: `${ROLE_BASE_URL}/${id}/form`,
-      method: "get",
-    });
-  },
+//   /** 获取角色下拉数据源 */
+//   getOptions() {
+//     return request<any, OptionType[]>({
+//       url: `${ROLE_BASE_URL}/options`,
+//       method: "get",
+//     });
+//   },
 
-  /** 添加角色 */
-  create(data: RoleForm) {
-    return request({
-      url: `${ROLE_BASE_URL}`,
-      method: "post",
-      data: data,
-    });
-  },
+//   /** 获取角色信息 */
+//   getOne(id: number) {
+//     return request<any, RoleForm>({
+//       url: `${ROLE_BASE_URL}/${id}`,
+//       method: "get",
+//     });
+//   },
+//   /**
+//    * 获取角色的菜单ID集合
+//    *
+//    * @param roleId 角色ID
+//    * @returns 角色的菜单ID集合
+//    */
+//   getRoleMenuIds(roleId: string) {
+//     return request<any, number[]>({
+//       url: `${ROLE_BASE_URL}/${roleId}/menuIds`,
+//       method: "get",
+//     });
+//   },
 
-  /**
-   * 更新角色
-   *
-   * @param id 角色ID
-   * @param data 角色表单数据
-   */
-  update(id: string, data: RoleForm) {
-    return request({
-      url: `${ROLE_BASE_URL}/${id}`,
-      method: "put",
-      data: data,
-    });
-  },
+//   /**
+//    * 分配菜单权限
+//    *
+//    * @param roleId 角色ID
+//    * @param data 菜单ID集合
+//    */
+//   updateRoleMenus(roleId: string, data: number[]) {
+//     return request({
+//       url: `${ROLE_BASE_URL}/${roleId}/menus`,
+//       method: "put",
+//       data: data,
+//     });
+//   },
 
-  /**
-   * 批量删除角色，多个以英文逗号(,)分割
-   *
-   * @param ids 角色ID字符串，多个以英文逗号(,)分割
-   */
-  deleteByIds(ids: string) {
-    return request({
-      url: `${ROLE_BASE_URL}/${ids}`,
-      method: "delete",
-    });
-  },
-};
+//   /**
+//    * 获取角色表单数据
+//    *
+//    * @param id 角色ID
+//    * @returns 角色表单数据
+//    */
+//   getFormData(id: string) {
+//     return request<any, RoleForm>({
+//       url: `${ROLE_BASE_URL}/${id}/form`,
+//       method: "get",
+//     });
+//   },
 
-export default RoleAPI;
+//   /** 添加角色 */
+//   create(data: RoleForm) {
+//     return request({
+//       url: `${ROLE_BASE_URL}`,
+//       method: "post",
+//       data: data,
+//     });
+//   },
+
+//   /**
+//    * 更新角色
+//    *
+//    * @param id 角色ID
+//    * @param data 角色表单数据
+//    */
+//   update(id: string, data: RoleForm) {
+//     return request({
+//       url: `${ROLE_BASE_URL}/${id}`,
+//       method: "put",
+//       data: data,
+//     });
+//   },
+
+//   /**
+//    * 批量删除角色，多个以英文逗号(,)分割
+//    *
+//    * @param ids 角色ID字符串，多个以英文逗号(,)分割
+//    */
+//   deleteByIds(ids: string) {
+//     return request({
+//       url: `${ROLE_BASE_URL}/${ids}`,
+//       method: "delete",
+//     });
+//   },
+// };
+
+// export default RoleAPI;
 
 /** 角色分页查询参数 */
 export interface RolePageQuery extends PageQuery {
@@ -117,7 +145,10 @@ export interface RolePageVO {
   createdAt: Date;
   /** 修改时间 */
   updatedAt?: Date;
-  sort?: number;
+  /** 创建人 */
+  createBy: string;
+  /** 修改人 */
+  updateBy?: string;
 }
 
 /** 角色表单对象 */
@@ -126,12 +157,13 @@ export interface RoleForm {
   id?: number;
   /** 角色编码 */
   code?: string;
-  /** 数据权限 */
-  dataScope?: number;
+  // /** 数据权限 */
+  // dataScope?: number;
   /** 角色名称 */
   name?: string;
-  /** 排序 */
-  sort?: number;
-  /** 角色状态(1-正常；0-停用) */
-  status?: number;
+  // /** 排序 */
+  // sort?: number;
+  // /** 角色状态(1-正常；0-停用) */
+  // status?: number;
+  descripton?: string;
 }

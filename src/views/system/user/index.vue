@@ -28,8 +28,8 @@
                 clearable
                 class="!w-[100px]"
               >
-                <el-option label="正常" :value="1" />
-                <el-option label="禁用" :value="0" />
+                <el-option label="正常" value="NORMAL" />
+                <el-option label="冻结" value="FROZEN" />
               </el-select>
             </el-form-item>
 
@@ -74,47 +74,36 @@
                 删除
               </el-button>
             </div>
-            <div>
-              <el-button
-                v-hasPerm="'sys:user:import'"
-                icon="upload"
-                @click="handleOpenImportDialog"
-              >
-                导入
-              </el-button>
-
-              <el-button v-hasPerm="'sys:user:export'" icon="download" @click="handleExport">
-                导出
-              </el-button>
-            </div>
           </div>
 
           <el-table v-loading="loading" :data="pageData" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center" />
-            <el-table-column label="用户名" prop="username" />
-            <el-table-column label="昵称" width="150" align="center" prop="nickname" />
-            <el-table-column label="性别" width="100" align="center">
+            <el-table-column label="用户名" min-width="100" prop="username" />
+            <el-table-column label="昵称" min-width="100" align="center" prop="nickname" />
+            <el-table-column label="工号" min-width="100" align="center" prop="userNo" />
+            <el-table-column label="性别" min-width="80" align="center">
               <template #default="scope">
-                <!-- 性别字典翻译 -->
-                <DictLabel v-model="scope.row.gender" code="gender" />
-              </template>
-            </el-table-column>
-            <el-table-column label="部门" width="120" align="center" prop="dept.name" />
-            <el-table-column label="手机号码" align="center" prop="phone" width="120" />
-            <el-table-column label="邮箱" align="center" prop="email" width="160" />
-            <el-table-column label="状态" align="center" prop="status" width="80">
-              <template #default="scope">
-                <el-tag :type="scope.row.status == 1 ? 'success' : 'info'">
-                  {{ scope.row.status == 1 ? "正常" : "禁用" }}
+                <el-tag :type="GENDER_MAP[scope.row.gender].tagType">
+                  {{ GENDER_MAP[scope.row.gender].label }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="创建时间" align="center" prop="createTime" width="150" />
-            <el-table-column label="操作" fixed="right" width="220">
+            <el-table-column label="部门" min-width="100" align="center" prop="dept.name" />
+            <el-table-column label="手机号码" min-width="150" align="center" prop="phone" />
+            <el-table-column label="邮箱" min-width="150" align="center" prop="email" />
+            <el-table-column label="状态" min-width="80" align="center" prop="status">
+              <template #default="scope">
+                <el-tag :type="scope.row.status == 'NORMAL' ? 'success' : 'info'">
+                  {{ scope.row.status == "NORMAL" ? "正常" : "冻结" }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="创建时间" align="center" min-width="150" prop="createdAt" />
+            <el-table-column label="操作" fixed="right" min-width="220">
               <template #default="scope">
                 <el-button
                   v-hasPerm="'sys:user:password:reset'"
-                  type="primary"
+                  type="warning"
                   icon="RefreshLeft"
                   size="small"
                   link
@@ -168,9 +157,17 @@
         <el-form-item label="用户名" prop="username">
           <el-input
             v-model="formData.username"
-            :readonly="!!formData.id"
+            :disabled="!!formData.id"
             placeholder="请输入用户名"
           />
+        </el-form-item>
+
+        <el-form-item v-if="!formData.id" label="密码" prop="password">
+          <el-input v-model="formData.password" placeholder="请输入密码" />
+        </el-form-item>
+
+        <el-form-item label="工号" prop="userNo">
+          <el-input v-model="formData.userNo" :disabled="true" />
         </el-form-item>
 
         <el-form-item label="用户昵称" prop="nickname">
@@ -189,7 +186,15 @@
         </el-form-item>
 
         <el-form-item label="性别" prop="gender">
-          <Dict v-model="formData.gender" code="gender" />
+          <!-- <Dict v-model="formData.gender" code="gender" /> -->
+          <el-select v-model="formData.gender">
+            <el-option
+              v-for="option in GENDER_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
         </el-form-item>
 
         <el-form-item label="角色" prop="roleIds">
@@ -216,9 +221,9 @@
             v-model="formData.status"
             inline-prompt
             active-text="正常"
-            inactive-text="禁用"
-            :active-value="1"
-            :inactive-value="0"
+            inactive-text="冻结"
+            :active-value="USER_STATUS_ENUM.NORMAL"
+            :inactive-value="USER_STATUS_ENUM.FROZEN"
           />
         </el-form-item>
       </el-form>
@@ -230,9 +235,6 @@
         </div>
       </template>
     </el-drawer>
-
-    <!-- 用户导入 -->
-    <UserImport v-model="importDialogVisible" @import-success="handleQuery()" />
   </div>
 </template>
 
@@ -243,7 +245,9 @@ import DeptAPI from "@/api/system/dept.api";
 import RoleAPI from "@/api/system/role.api";
 
 import DeptTree from "./components/DeptTree.vue";
-import UserImport from "./components/UserImport.vue";
+import { RequestQueryBuilder } from "@nestjsx/crud-request";
+import { GENDER_OPTIONS, GENDER_MAP, USER_STATUS_OPTIONS } from "@/constants";
+import { USER_STATUS_ENUM } from "@/enums/system/user.enum";
 
 defineOptions({
   name: "User",
@@ -255,8 +259,6 @@ const userFormRef = ref();
 const queryParams = reactive<UserPageQuery>({
   page: 1,
   limit: 10,
-  join: "dept||name",
-  s: { deptId: undefined },
 });
 
 const pageData = ref<UserPageVO[]>();
@@ -269,12 +271,13 @@ const dialog = reactive({
 });
 
 const formData = reactive<UserForm>({
-  status: 1,
+  status: USER_STATUS_ENUM.NORMAL,
 });
 
 const rules = reactive({
   username: [{ required: true, message: "用户名不能为空", trigger: "blur" }],
   nickname: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
+  password: [{ required: true, message: "密码不能为空", trigger: "blur" }],
   deptId: [{ required: true, message: "所属部门不能为空", trigger: "blur" }],
   roleIds: [{ required: true, message: "用户角色不能为空", trigger: "blur" }],
   email: [
@@ -299,16 +302,61 @@ const selectIds = ref<number[]>([]);
 const deptOptions = ref<OptionType[]>();
 // 角色下拉数据源
 const roleOptions = ref<OptionType[]>();
-// 导入弹窗显示状态
-const importDialogVisible = ref(false);
 
 // 查询
-function handleQuery() {
+async function handleQuery() {
   loading.value = true;
-  if (queryParams.deptId) {
-    queryParams.s.deptId = queryParams.deptId;
-  }
-  UserAPI.getPage(queryParams)
+
+  const depts = await DeptAPI.getChildren(queryParams.deptId || 1);
+  const deptIds = depts.map((m) => Number(m.id));
+
+  const queryString = RequestQueryBuilder.create({
+    fields: [
+      "id",
+      "username",
+      "nickname",
+      "userNo",
+      "gender",
+      "phone",
+      "email",
+      "status",
+      "createdAt",
+    ],
+    search: {
+      $and: [
+        {
+          $and: [
+            { status: queryParams.status },
+            {
+              createdAt: {
+                $between: queryParams.createdAt
+                  ? queryParams.createdAt
+                  : ["2025-01-01", "2099-01-01"],
+              },
+            },
+          ],
+        },
+        {
+          $or: [
+            { username: { $cont: queryParams.keywords } },
+            { nickname: { $cont: queryParams.keywords } },
+            { userNo: { $cont: queryParams.keywords } },
+            { phone: { $cont: queryParams.keywords } },
+          ],
+        },
+        {
+          $and: [{ "dept.id": { $in: deptIds } }],
+        },
+      ],
+    },
+    join: [{ field: "dept" }],
+    sort: [{ field: "id", order: "DESC" }],
+    page: 1,
+    limit: 10,
+    resetCache: true,
+  }).query();
+
+  UserAPI.getPageList<UserPageVO>(queryString)
     .then((response) => {
       console.log(response);
       pageData.value = response.data;
@@ -323,8 +371,6 @@ function handleQuery() {
 function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.page = 1;
-  queryParams.deptId = undefined;
-  queryParams.createdAt = undefined;
   handleQuery();
 }
 
@@ -344,9 +390,9 @@ function hancleResetPassword(row: UserPageVO) {
         ElMessage.warning("密码至少需要6位字符，请重新输入");
         return false;
       }
-      // UserAPI.resetPassword(row.id, value).then(() => {
-      //   ElMessage.success("密码重置成功，新密码是：" + value);
-      // });
+      UserAPI.resetPassword(row.id, value).then(() => {
+        ElMessage.success("密码重置成功，新密码是：" + value);
+      });
     },
     () => {
       ElMessage.info("已取消重置密码");
@@ -359,21 +405,23 @@ function hancleResetPassword(row: UserPageVO) {
  *
  * @param id 用户ID
  */
-async function handleOpenDialog(id?: string) {
-  dialog.visible = true;
+async function handleOpenDialog(id?: number) {
   // 加载角色下拉数据源
   roleOptions.value = await RoleAPI.getOptions();
   // 加载部门下拉数据源
-  deptOptions.value = await DeptAPI.getOptions();
+  deptOptions.value = await DeptAPI.getFullTree();
 
   if (id) {
     dialog.title = "修改用户";
-    UserAPI.getFormData(id).then((data) => {
+    UserAPI.getInfo(id).then((data) => {
       Object.assign(formData, { ...data });
     });
   } else {
+    formData.userNo = await UserAPI.getUserNo();
     dialog.title = "新增用户";
   }
+
+  dialog.visible = true;
 }
 
 // 关闭弹窗
@@ -383,7 +431,7 @@ function handleCloseDialog() {
   userFormRef.value.clearValidate();
 
   formData.id = undefined;
-  formData.status = 1;
+  formData.status = USER_STATUS_ENUM.NORMAL;
 }
 
 // 提交用户表单（防抖）
@@ -418,9 +466,9 @@ const handleSubmit = useDebounceFn(() => {
  *
  * @param id  用户ID
  */
-function handleDelete(id?: string) {
-  const userIds = [id || selectIds.value].join(",");
-  if (!userIds) {
+function handleDelete(id?: number) {
+  const userIds = id ? [id] : selectIds.value;
+  if (!userIds.length) {
     ElMessage.warning("请勾选删除项");
     return;
   }
@@ -443,34 +491,6 @@ function handleDelete(id?: string) {
       ElMessage.info("已取消删除");
     }
   );
-}
-
-// 打开导入弹窗
-function handleOpenImportDialog() {
-  importDialogVisible.value = true;
-}
-
-// 导出用户
-function handleExport() {
-  UserAPI.export(queryParams).then((response: any) => {
-    const fileData = response.data;
-    const fileName = decodeURI(response.headers["content-disposition"].split(";")[1].split("=")[1]);
-    const fileType =
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-
-    const blob = new Blob([fileData], { type: fileType });
-    const downloadUrl = window.URL.createObjectURL(blob);
-
-    const downloadLink = document.createElement("a");
-    downloadLink.href = downloadUrl;
-    downloadLink.download = fileName;
-
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-
-    document.body.removeChild(downloadLink);
-    window.URL.revokeObjectURL(downloadUrl);
-  });
 }
 
 onMounted(() => {

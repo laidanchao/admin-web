@@ -15,6 +15,7 @@
       :expand-on-click-node="false"
       :filter-node-method="handleFilter"
       default-expand-all
+      :highlight-current="true"
       @node-click="handleNodeClick"
     />
   </el-card>

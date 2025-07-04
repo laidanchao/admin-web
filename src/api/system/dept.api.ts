@@ -1,94 +1,129 @@
 import request from "@/utils/request";
+import BaseApi from "../base.api";
 
 const DEPT_BASE_URL = "/api/sys/dept";
 
-const DeptAPI = {
+class DeptAPI extends BaseApi {
+  constructor() {
+    super(DEPT_BASE_URL);
+  }
+
+  getChildren(id: number) {
+    return request<any, DeptVO[]>({
+      url: `${DEPT_BASE_URL}/getChildren/${id}`,
+      method: "get",
+    });
+  }
+
   getFullTree() {
     return request<any, OptionType[]>({
       url: `${DEPT_BASE_URL}/getFullTree`,
       method: "get",
     });
-  },
+  }
 
-  /**
-   * 获取部门列表
-   *
-   * @param queryParams 查询参数（可选）
-   * @returns 部门树形表格数据
-   */
-  getList(queryParams?: DeptQuery) {
-    return request<any, DeptVO[]>({
-      url: `${DEPT_BASE_URL}`,
-      method: "get",
-      params: queryParams,
-    });
-  },
+  // getTree(id: number) {
+  //   return request<any, OptionType[]>({
+  //     url: `${DEPT_BASE_URL}/getTree/${id}`,
+  //     method: "get",
+  //   });
+  // }
+}
 
-  /** 获取部门下拉列表 */
-  getOptions() {
-    return request<any, OptionType[]>({
-      url: `${DEPT_BASE_URL}/options`,
-      method: "get",
-    });
-  },
+export default new DeptAPI();
 
-  /**
-   * 获取部门表单数据
-   *
-   * @param id 部门ID
-   * @returns 部门表单数据
-   */
-  getFormData(id: string) {
-    return request<any, DeptForm>({
-      url: `${DEPT_BASE_URL}/${id}/form`,
-      method: "get",
-    });
-  },
+// const DeptAPI = {
+//   getFullTree() {
+//     return request<any, OptionType[]>({
+//       url: `${DEPT_BASE_URL}/getFullTree`,
+//       method: "get",
+//     });
+//   },
 
-  /**
-   * 新增部门
-   *
-   * @param data 部门表单数据
-   * @returns 请求结果
-   */
-  create(data: DeptForm) {
-    return request({
-      url: `${DEPT_BASE_URL}`,
-      method: "post",
-      data: data,
-    });
-  },
+//   getChildren(id: number) {
+//     return request<any, DeptVO[]>({
+//       url: `${DEPT_BASE_URL}/getChildren/${id}`,
+//       method: "get",
+//     });
+//   },
 
-  /**
-   * 修改部门
-   *
-   * @param id 部门ID
-   * @param data 部门表单数据
-   * @returns 请求结果
-   */
-  update(id: string, data: DeptForm) {
-    return request({
-      url: `${DEPT_BASE_URL}/${id}`,
-      method: "put",
-      data: data,
-    });
-  },
+//   /**
+//    * 获取部门列表
+//    *
+//    * @param queryParams 查询参数（可选）
+//    * @returns 部门树形表格数据
+//    */
+//   getList(queryParams?: DeptQuery) {
+//     return request<any, DeptVO[]>({
+//       url: `${DEPT_BASE_URL}`,
+//       method: "get",
+//       params: queryParams,
+//     });
+//   },
 
-  /**
-   * 删除部门
-   *
-   * @param ids 部门ID，多个以英文逗号(,)分隔
-   * @returns 请求结果
-   */
-  deleteByIds(ids: string) {
-    return request({
-      url: `${DEPT_BASE_URL}/${ids}`,
-      method: "delete",
-    });
-  },
-};
+//   /** 获取部门下拉列表 */
+//   getOptions() {
+//     return request<any, OptionType[]>({
+//       url: `${DEPT_BASE_URL}/options`,
+//       method: "get",
+//     });
+//   },
 
-export default DeptAPI;
+//   /**
+//    * 获取部门表单数据
+//    *
+//    * @param id 部门ID
+//    * @returns 部门表单数据
+//    */
+//   getFormData(id: string) {
+//     return request<any, DeptForm>({
+//       url: `${DEPT_BASE_URL}/${id}/form`,
+//       method: "get",
+//     });
+//   },
+
+//   /**
+//    * 新增部门
+//    *
+//    * @param data 部门表单数据
+//    * @returns 请求结果
+//    */
+//   create(data: DeptForm) {
+//     return request({
+//       url: `${DEPT_BASE_URL}`,
+//       method: "post",
+//       data: data,
+//     });
+//   },
+
+//   /**
+//    * 修改部门
+//    *
+//    * @param id 部门ID
+//    * @param data 部门表单数据
+//    * @returns 请求结果
+//    */
+//   update(id: string, data: DeptForm) {
+//     return request({
+//       url: `${DEPT_BASE_URL}/${id}`,
+//       method: "put",
+//       data: data,
+//     });
+//   },
+
+//   /**
+//    * 删除部门
+//    *
+//    * @param ids 部门ID，多个以英文逗号(,)分隔
+//    * @returns 请求结果
+//    */
+//   deleteByIds(ids: string) {
+//     return request({
+//       url: `${DEPT_BASE_URL}/${ids}`,
+//       method: "delete",
+//     });
+//   },
+// };
 
 /** 部门查询参数 */
 export interface DeptQuery {

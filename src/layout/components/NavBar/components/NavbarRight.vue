@@ -69,14 +69,13 @@ function logout() {
     type: "warning",
     lockScroll: false,
   }).then(() => {
-    userStore
-      .logout()
-      .then(() => {
-        tagsViewStore.delAllViews();
-      })
-      .then(() => {
-        router.push(`/login?redirect=${route.fullPath}`);
-      });
+    tagsViewStore.delAllViews().then(() => {
+      useUserStore()
+        .clearSessionAndCache()
+        .then(() => {
+          router.push(`/login?redirect=${route.fullPath}`);
+        });
+    });
   });
 }
 </script>
