@@ -22,108 +22,15 @@ class DeptAPI extends BaseApi {
     });
   }
 
-  // getTree(id: number) {
-  //   return request<any, OptionType[]>({
-  //     url: `${DEPT_BASE_URL}/getTree/${id}`,
-  //     method: "get",
-  //   });
-  // }
+  getDeptList() {
+    return request<any, DeptVO[]>({
+      url: `${DEPT_BASE_URL}/getDeptList`,
+      method: "get",
+    });
+  }
 }
 
 export default new DeptAPI();
-
-// const DeptAPI = {
-//   getFullTree() {
-//     return request<any, OptionType[]>({
-//       url: `${DEPT_BASE_URL}/getFullTree`,
-//       method: "get",
-//     });
-//   },
-
-//   getChildren(id: number) {
-//     return request<any, DeptVO[]>({
-//       url: `${DEPT_BASE_URL}/getChildren/${id}`,
-//       method: "get",
-//     });
-//   },
-
-//   /**
-//    * 获取部门列表
-//    *
-//    * @param queryParams 查询参数（可选）
-//    * @returns 部门树形表格数据
-//    */
-//   getList(queryParams?: DeptQuery) {
-//     return request<any, DeptVO[]>({
-//       url: `${DEPT_BASE_URL}`,
-//       method: "get",
-//       params: queryParams,
-//     });
-//   },
-
-//   /** 获取部门下拉列表 */
-//   getOptions() {
-//     return request<any, OptionType[]>({
-//       url: `${DEPT_BASE_URL}/options`,
-//       method: "get",
-//     });
-//   },
-
-//   /**
-//    * 获取部门表单数据
-//    *
-//    * @param id 部门ID
-//    * @returns 部门表单数据
-//    */
-//   getFormData(id: string) {
-//     return request<any, DeptForm>({
-//       url: `${DEPT_BASE_URL}/${id}/form`,
-//       method: "get",
-//     });
-//   },
-
-//   /**
-//    * 新增部门
-//    *
-//    * @param data 部门表单数据
-//    * @returns 请求结果
-//    */
-//   create(data: DeptForm) {
-//     return request({
-//       url: `${DEPT_BASE_URL}`,
-//       method: "post",
-//       data: data,
-//     });
-//   },
-
-//   /**
-//    * 修改部门
-//    *
-//    * @param id 部门ID
-//    * @param data 部门表单数据
-//    * @returns 请求结果
-//    */
-//   update(id: string, data: DeptForm) {
-//     return request({
-//       url: `${DEPT_BASE_URL}/${id}`,
-//       method: "put",
-//       data: data,
-//     });
-//   },
-
-//   /**
-//    * 删除部门
-//    *
-//    * @param ids 部门ID，多个以英文逗号(,)分隔
-//    * @returns 请求结果
-//    */
-//   deleteByIds(ids: string) {
-//     return request({
-//       url: `${DEPT_BASE_URL}/${ids}`,
-//       method: "delete",
-//     });
-//   },
-// };
 
 /** 部门查询参数 */
 export interface DeptQuery {
@@ -156,15 +63,9 @@ export interface DeptVO {
 /** 部门表单类型 */
 export interface DeptForm {
   /** 部门ID(新增不填) */
-  id?: string;
+  id?: number;
   /** 部门名称 */
   name?: string;
-  /** 部门编号 */
-  code?: string;
   /** 父部门ID */
-  parentId: string;
-  /** 排序 */
-  sort?: number;
-  /** 状态(1:启用；0：禁用) */
-  status?: number;
+  parentId: number;
 }

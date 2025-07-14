@@ -314,7 +314,7 @@ function handleSubmit() {
 }
 
 // 删除菜单
-function handleDelete(menuId: string) {
+function handleDelete(menuId: number) {
   if (!menuId) {
     ElMessage.warning("请勾选删除项");
     return false;
@@ -327,7 +327,7 @@ function handleDelete(menuId: string) {
   }).then(
     () => {
       loading.value = true;
-      MenuAPI.deleteById(menuId)
+      MenuAPI.deleteByIds([menuId])
         .then(() => {
           ElMessage.success("删除成功");
           handleQuery();

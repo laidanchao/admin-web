@@ -1,21 +1,7 @@
 <template>
   <div class="app-container">
     <div class="search-bar">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
-        <el-form-item label="关键字" prop="keywords">
-          <el-input
-            v-model="queryParams.keywords"
-            placeholder="部门名称"
-            @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-
-        <el-form-item label="部门状态" prop="status">
-          <el-select v-model="queryParams.status" placeholder="全部" clearable class="!w-[100px]">
-            <el-option :value="1" label="正常" />
-            <el-option :value="0" label="禁用" />
-          </el-select>
-        </el-form-item>
+      <el-form ref="queryFormRef" :inline="true">
         <el-form-item>
           <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">
             搜索
@@ -35,15 +21,6 @@
         >
           新增
         </el-button>
-        <el-button
-          v-hasPerm="['sys:dept:delete']"
-          type="danger"
-          :disabled="selectIds.length === 0"
-          icon="delete"
-          @click="handleDelete()"
-        >
-          删除
-        </el-button>
       </div>
 
       <el-table
@@ -52,9 +29,7 @@
         row-key="id"
         default-expand-all
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-        @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="name" label="部门名称" min-width="200" />
         <el-table-column prop="code" label="部门编号" width="200" />
         <el-table-column prop="status" label="状态" width="100">
@@ -123,23 +98,6 @@
         <el-form-item label="部门名称" prop="name">
           <el-input v-model="formData.name" placeholder="请输入部门名称" />
         </el-form-item>
-        <el-form-item label="部门编号" prop="code">
-          <el-input v-model="formData.code" placeholder="请输入部门编号" />
-        </el-form-item>
-        <el-form-item label="显示排序" prop="sort">
-          <el-input-number
-            v-model="formData.sort"
-            controls-position="right"
-            style="width: 100px"
-            :min="0"
-          />
-        </el-form-item>
-        <el-form-item label="部门状态">
-          <el-radio-group v-model="formData.status">
-            <el-radio :value="1">正常</el-radio>
-            <el-radio :value="0">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
       </el-form>
 
       <template #footer>
@@ -158,14 +116,14 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import DeptAPI, { DeptVO, DeptForm, DeptQuery } from "@/api/system/dept.api";
+import DeptAPI, { DeptVO, DeptForm } from "@/api/system/dept.api";
 
 const queryFormRef = ref();
 const deptFormRef = ref();
 
 const loading = ref(false);
 const selectIds = ref<number[]>([]);
-const queryParams = reactive<DeptQuery>({});
+// const queryParams = reactive<DeptQuery>({});
 
 const dialog = reactive({
   title: "",
@@ -175,9 +133,7 @@ const dialog = reactive({
 const deptList = ref<DeptVO[]>();
 const deptOptions = ref<OptionType[]>();
 const formData = reactive<DeptForm>({
-  status: 1,
-  parentId: "0",
-  sort: 1,
+  parentId: null,
 });
 
 const rules = reactive({
@@ -190,7 +146,7 @@ const rules = reactive({
 // 查询部门
 function handleQuery() {
   loading.value = true;
-  DeptAPI.getList(queryParams).then((data) => {
+  DeptAPI.getDeptList().then((data) => {
     deptList.value = data;
     loading.value = false;
   });
@@ -202,23 +158,18 @@ function handleResetQuery() {
   handleQuery();
 }
 
-// 处理选中项变化
-function handleSelectionChange(selection: any) {
-  selectIds.value = selection.map((item: any) => item.id);
-}
-
 /**
  * 打开部门弹窗
  *
  * @param parentId 父部门ID
  * @param deptId 部门ID
  */
-async function handleOpenDialog(parentId?: string, deptId?: string) {
+async function handleOpenDialog(parentId?: number, deptId?: number) {
   // 加载部门下拉数据
-  const data = await DeptAPI.getOptions();
+  const data = await DeptAPI.getFullTree();
   deptOptions.value = [
     {
-      value: "0",
+      value: 0,
       label: "顶级部门",
       children: data,
     },
@@ -226,13 +177,19 @@ async function handleOpenDialog(parentId?: string, deptId?: string) {
 
   dialog.visible = true;
   if (deptId) {
+    // 修改时父级部门不能为当前部门
+    if (formData.parentId == deptId) {
+      ElMessage.error("父级菜单不能为当前菜单");
+      return;
+    }
+
     dialog.title = "修改部门";
-    DeptAPI.getFormData(deptId).then((data) => {
+    DeptAPI.getOne(deptId).then((data) => {
       Object.assign(formData, data);
     });
   } else {
     dialog.title = "新增部门";
-    formData.parentId = parentId || "0";
+    formData.parentId = parentId;
   }
 }
 
@@ -243,7 +200,7 @@ function handleSubmit() {
       loading.value = true;
       const deptId = formData.id;
       if (deptId) {
-        DeptAPI.update(deptId, formData)
+        DeptAPI.updateOne(deptId, formData)
           .then(() => {
             ElMessage.success("修改成功");
             handleCloseDialog();
@@ -251,7 +208,7 @@ function handleSubmit() {
           })
           .finally(() => (loading.value = false));
       } else {
-        DeptAPI.create(formData)
+        DeptAPI.createOne(formData)
           .then(() => {
             ElMessage.success("新增成功");
             handleCloseDialog();
@@ -264,10 +221,8 @@ function handleSubmit() {
 }
 
 // 删除部门
-function handleDelete(deptId?: string) {
-  const deptIds = [deptId || selectIds.value].join(",");
-
-  if (!deptIds) {
+function handleDelete(deptId?: number) {
+  if (!deptId) {
     ElMessage.warning("请勾选删除项");
     return;
   }
@@ -279,7 +234,7 @@ function handleDelete(deptId?: string) {
   }).then(
     () => {
       loading.value = true;
-      DeptAPI.deleteByIds(deptIds)
+      DeptAPI.deleteByIds([deptId])
         .then(() => {
           ElMessage.success("删除成功");
           handleResetQuery();
@@ -298,9 +253,7 @@ function resetForm() {
   deptFormRef.value.clearValidate();
 
   formData.id = undefined;
-  formData.parentId = "0";
-  formData.status = 1;
-  formData.sort = 1;
+  formData.parentId = null;
 }
 
 // 关闭弹窗
