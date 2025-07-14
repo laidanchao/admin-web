@@ -1,106 +1,146 @@
 import { MenuTypeEnum } from "@/enums/system/menu.enum";
 import request from "@/utils/request";
+import BaseApi from "../base.api";
 // 菜单基础URL
-const MENU_BASE_URL = "/api/sys/menus";
+const MENU_BASE_URL = "/api/sys/menu";
 
-const MenuAPI = {
-  /**
-   * 获取当前用户的路由列表
-   * <p/>
-   * 无需传入角色，后端解析token获取角色自行判断是否拥有路由的权限
-   *
-   * @returns 路由列表
-   */
-  getRoutes() {
-    return request<any, RouteVO[]>({
-      url: `${MENU_BASE_URL}/routes`,
-      method: "get",
-    });
-  },
+class MenuAPI extends BaseApi {
+  constructor() {
+    super(MENU_BASE_URL);
+  }
 
-  /**
-   * 获取菜单树形列表
-   *
-   * @param queryParams 查询参数
-   * @returns 菜单树形列表
-   */
-  getList(queryParams: MenuQuery) {
-    return request<any, MenuVO[]>({
-      url: `${MENU_BASE_URL}`,
-      method: "get",
-      params: queryParams,
-    });
-  },
-
-  /**
-   * 获取菜单下拉数据源
-   *
-   * @returns 菜单下拉数据源
-   */
-  getOptions(onlyParent?: boolean) {
+  getFullTree() {
     return request<any, OptionType[]>({
-      url: `${MENU_BASE_URL}/options`,
-      method: "get",
-      params: { onlyParent: onlyParent },
-    });
-  },
-
-  /**
-   * 获取菜单表单数据
-   *
-   * @param id 菜单ID
-   */
-  getFormData(id: string) {
-    return request<any, MenuForm>({
-      url: `${MENU_BASE_URL}/${id}/form`,
+      url: `${MENU_BASE_URL}/getFullTree`,
       method: "get",
     });
-  },
+  }
 
-  /**
-   * 添加菜单
-   *
-   * @param data 菜单表单数据
-   * @returns 请求结果
-   */
-  create(data: MenuForm) {
-    return request({
-      url: `${MENU_BASE_URL}`,
+  getMenuList(params: any) {
+    return request<any, MenuVO[]>({
+      url: `${MENU_BASE_URL}/getMenuList`,
+      method: "get",
+      params,
+    });
+  }
+
+  create(data: any) {
+    return request<any, any>({
+      url: `${MENU_BASE_URL}/createMenu`,
       method: "post",
-      data: data,
+      data,
     });
-  },
+  }
 
-  /**
-   * 修改菜单
-   *
-   * @param id 菜单ID
-   * @param data 菜单表单数据
-   * @returns 请求结果
-   */
-  update(id: string, data: MenuForm) {
-    return request({
-      url: `${MENU_BASE_URL}/${id}`,
-      method: "put",
-      data: data,
+  update(id: number, data: any) {
+    return request<any, any>({
+      url: `${MENU_BASE_URL}/updateMenu/${id}`,
+      method: "post",
+      data,
     });
-  },
+  }
+}
 
-  /**
-   * 删除菜单
-   *
-   * @param id 菜单ID
-   * @returns 请求结果
-   */
-  deleteById(id: string) {
-    return request({
-      url: `${MENU_BASE_URL}/${id}`,
-      method: "delete",
-    });
-  },
-};
+export default new MenuAPI();
 
-export default MenuAPI;
+// const MenuAPI = {
+//   /**
+//    * 获取当前用户的路由列表
+//    * <p/>
+//    * 无需传入角色，后端解析token获取角色自行判断是否拥有路由的权限
+//    *
+//    * @returns 路由列表
+//    */
+//   getRoutes() {
+//     return request<any, RouteVO[]>({
+//       url: `${MENU_BASE_URL}/routes`,
+//       method: "get",
+//     });
+//   },
+
+//   /**
+//    * 获取菜单树形列表
+//    *
+//    * @param queryParams 查询参数
+//    * @returns 菜单树形列表
+//    */
+//   getList(queryParams: MenuQuery) {
+//     return request<any, MenuVO[]>({
+//       url: `${MENU_BASE_URL}`,
+//       method: "get",
+//       params: queryParams,
+//     });
+//   },
+
+//   /**
+//    * 获取菜单下拉数据源
+//    *
+//    * @returns 菜单下拉数据源
+//    */
+//   getOptions(onlyParent?: boolean) {
+//     return request<any, OptionType[]>({
+//       url: `${MENU_BASE_URL}/options`,
+//       method: "get",
+//       params: { onlyParent: onlyParent },
+//     });
+//   },
+
+//   /**
+//    * 获取菜单表单数据
+//    *
+//    * @param id 菜单ID
+//    */
+//   getFormData(id: string) {
+//     return request<any, MenuForm>({
+//       url: `${MENU_BASE_URL}/${id}/form`,
+//       method: "get",
+//     });
+//   },
+
+//   /**
+//    * 添加菜单
+//    *
+//    * @param data 菜单表单数据
+//    * @returns 请求结果
+//    */
+//   create(data: MenuForm) {
+//     return request({
+//       url: `${MENU_BASE_URL}`,
+//       method: "post",
+//       data: data,
+//     });
+//   },
+
+//   /**
+//    * 修改菜单
+//    *
+//    * @param id 菜单ID
+//    * @param data 菜单表单数据
+//    * @returns 请求结果
+//    */
+//   update(id: string, data: MenuForm) {
+//     return request({
+//       url: `${MENU_BASE_URL}/${id}`,
+//       method: "put",
+//       data: data,
+//     });
+//   },
+
+//   /**
+//    * 删除菜单
+//    *
+//    * @param id 菜单ID
+//    * @returns 请求结果
+//    */
+//   deleteById(id: string) {
+//     return request({
+//       url: `${MENU_BASE_URL}/${id}`,
+//       method: "delete",
+//     });
+//   },
+// };
+
+// export default MenuAPI;
 
 /** 菜单查询参数 */
 export interface MenuQuery {
@@ -167,40 +207,21 @@ export interface MenuVO {
 /** 菜单表单对象 */
 export interface MenuForm {
   /** 菜单ID */
-  id?: string;
+  id?: number;
   /** 父菜单ID */
-  parentId?: string;
+  parentId?: number;
   /** 菜单名称 */
   name?: string;
-  /** 菜单是否可见(1-是 0-否) */
-  visible: number;
   /** ICON */
   icon?: string;
   /** 排序 */
   sort?: number;
-  /** 路由名称 */
-  routeName?: string;
-  /** 路由路径 */
-  routePath?: string;
-  /** 组件路径 */
-  component?: string;
-  /** 跳转路由路径 */
-  redirect?: string;
+  /** 路由名称/外链地址 */
+  path?: string;
   /** 菜单 */
-  type?: number;
+  type?: MenuTypeEnum;
   /** 权限标识 */
   perm?: string;
-  /** 【菜单】是否开启页面缓存 */
-  keepAlive?: number;
-  /** 【目录】只有一个子路由是否始终显示 */
-  alwaysShow?: number;
-  /** 参数 */
-  params?: KeyValue[];
-}
-
-interface KeyValue {
-  key: string;
-  value: string;
 }
 
 export interface MenuTreeNode {

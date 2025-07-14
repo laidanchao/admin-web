@@ -68,14 +68,6 @@ class UserAPI extends BaseApi {
       data: { password },
     });
   }
-
-  deleteByIds(ids: number[]) {
-    return request<any, any>({
-      url: `${USER_BASE_URL}/deleteByIds`,
-      method: "post",
-      data: ids,
-    });
-  }
 }
 
 export default new UserAPI();

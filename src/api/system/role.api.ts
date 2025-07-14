@@ -1,5 +1,4 @@
 import request from "@/utils/request";
-import { RequestQueryBuilder } from "@nestjsx/crud-request";
 import BaseApi from "../base.api";
 
 const ROLE_BASE_URL = "/api/sys/role";
@@ -7,6 +6,21 @@ const ROLE_BASE_URL = "/api/sys/role";
 class RoleAPI extends BaseApi {
   constructor() {
     super(ROLE_BASE_URL);
+  }
+
+  getMenuIds(id: number) {
+    return request<any, number[]>({
+      url: `${ROLE_BASE_URL}/getMenuIds/${id}`,
+      method: "get",
+    });
+  }
+
+  updateRoleMenus(id: number, menuIds: number[]) {
+    return request<any, number[]>({
+      url: `${ROLE_BASE_URL}/updateRoleMenus/${id}`,
+      method: "post",
+      data: menuIds,
+    });
   }
 }
 
@@ -165,5 +179,5 @@ export interface RoleForm {
   // sort?: number;
   // /** 角色状态(1-正常；0-停用) */
   // status?: number;
-  descripton?: string;
+  description?: string;
 }

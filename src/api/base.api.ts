@@ -64,4 +64,12 @@ export default class BaseApi {
       method: "delete",
     });
   }
+
+  deleteByIds(ids: number[]) {
+    return request<any, any>({
+      url: `${this.baseUrl}/deleteByIds`,
+      method: "post",
+      data: ids,
+    });
+  }
 }
