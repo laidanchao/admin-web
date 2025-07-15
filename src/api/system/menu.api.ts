@@ -92,7 +92,7 @@ export interface MenuForm {
   /** 菜单 */
   type?: MenuTypeEnum;
   /** 权限标识 */
-  perm?: string;
+  permission?: string;
 }
 
 export interface MenuTreeNode {

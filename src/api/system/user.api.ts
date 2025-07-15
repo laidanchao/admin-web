@@ -93,7 +93,7 @@ export interface UserInfo {
   roles: RolePageVO[];
 
   /** 权限 */
-  perms: string[];
+  permissions: string[];
 }
 
 /**

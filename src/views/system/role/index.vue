@@ -403,7 +403,6 @@ function handleAssignPermSubmit() {
       .map((node: any) => node.value);
 
     loading.value = true;
-    console.log(1);
     RoleAPI.updateRoleMenus(roleId, checkedMenuIds)
       .then(() => {
         ElMessage.success("分配权限成功");

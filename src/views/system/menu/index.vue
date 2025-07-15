@@ -62,10 +62,9 @@
             <el-tag v-if="scope.row.type === MenuTypeEnum.LINK" type="info">外链</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="路由名称" align="left" width="150" prop="routeName" />
-        <el-table-column label="路由路径" align="left" width="150" prop="routePath" />
-        <el-table-column label="组件路径" align="left" width="250" prop="component" />
-        <el-table-column label="权限标识" align="center" width="200" prop="perm" />
+        <el-table-column label="路由名称" align="left" width="150" prop="name" />
+        <el-table-column label="路由路径" align="left" width="150" prop="path" />
+        <el-table-column label="权限标识" align="center" width="200" prop="permission" />
         <el-table-column label="排序" align="center" width="80" prop="sort" />
         <el-table-column fixed="right" align="center" label="操作" width="220">
           <template #default="scope">
@@ -137,7 +136,7 @@
 
         <el-form-item
           v-if="formData.type == MenuTypeEnum.CATALOG || formData.type == MenuTypeEnum.MENU"
-          prop="routePath"
+          prop="path"
         >
           <template #label>
             <div class="flex-y-center">
@@ -169,8 +168,12 @@
         </el-form-item>
 
         <!-- 权限标识 -->
-        <el-form-item v-if="formData.type == MenuTypeEnum.BUTTON" label="权限标识" prop="perm">
-          <el-input v-model="formData.perm" placeholder="sys:user:add" />
+        <el-form-item
+          v-if="formData.type == MenuTypeEnum.BUTTON"
+          label="权限标识"
+          prop="permission"
+        >
+          <el-input v-model="formData.permission" placeholder="sys:user:add" />
         </el-form-item>
 
         <el-form-item v-if="formData.type !== MenuTypeEnum.BUTTON" label="图标" prop="icon">
@@ -228,6 +231,7 @@ const rules = reactive({
   name: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
   type: [{ required: true, message: "请选择菜单类型", trigger: "blur" }],
   path: [{ required: true, message: "请输入路由名称", trigger: "blur" }],
+  permission: [{ required: true, message: "请输入权限标识", trigger: "blur" }],
 });
 
 // 选择表格的行菜单ID

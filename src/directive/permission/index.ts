@@ -16,22 +16,25 @@ export const hasPerm: Directive = {
       );
     }
 
-    const { roles } = useUserStore().userInfo;
+    const { roles, permissions: perms } = useUserStore().userInfo;
 
+    console.log(roles);
     // 超级管理员拥有所有权限
     if (roles.some((s) => s.code === "ROOT")) {
       return;
     }
 
-    // // 检查权限
-    // const hasAuth = Array.isArray(requiredPerms)
-    //   ? requiredPerms.some((perm) => perms.includes(perm))
-    //   : perms.includes(requiredPerms);
+    console.log(requiredPerms);
 
-    // // 如果没有权限，移除该元素
-    // if (!hasAuth && el.parentNode) {
-    //   el.parentNode.removeChild(el);
-    // }
+    // 检查权限
+    const hasAuth = Array.isArray(requiredPerms)
+      ? requiredPerms.some((perm) => perms.includes(perm))
+      : perms.includes(requiredPerms);
+
+    // 如果没有权限，移除该元素
+    if (!hasAuth && el.parentNode) {
+      el.parentNode.removeChild(el);
+    }
   },
 };
 
