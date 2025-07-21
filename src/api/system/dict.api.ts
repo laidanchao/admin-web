@@ -1,4 +1,3 @@
-import request from "@/utils/request";
 import BaseApi from "../base.api";
 
 const DICT_BASE_URL = "/api/sys/dict";

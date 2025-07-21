@@ -40,7 +40,6 @@ const settingStore = useSettingsStore();
 const userStore = useUserStore();
 const tagsViewStore = useTagsViewStore();
 
-const route = useRoute();
 const router = useRouter();
 const isDesktop = computed(() => appStore.device === DeviceEnum.DESKTOP);
 
