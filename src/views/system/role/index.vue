@@ -31,57 +31,38 @@
         </el-button>
       </div>
 
-      <el-table
-        ref="dataTableRef"
-        v-loading="loading"
-        :data="roleList"
-        highlight-current-row
-        border
+      <BaseTable
+        :table-data="roleList"
+        :columns="columns"
+        :total="total"
+        :query-params="queryParams"
+        :loading="loading"
+        show-selection
+        show-index
+        show-operation
         @selection-change="handleSelectionChange"
-      >
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="角色名称" prop="name" min-width="100" />
-        <el-table-column label="角色编码" prop="code" min-width="150" />
-        <el-table-column fixed="right" label="操作" min-width="220">
-          <template #default="scope">
-            <el-button
-              type="primary"
-              size="small"
-              link
-              icon="position"
-              @click="handleOpenAssignPermDialog(scope.row)"
-            >
-              分配权限
-            </el-button>
-            <el-button
-              type="primary"
-              size="small"
-              link
-              icon="edit"
-              @click="handleOpenDialog(scope.row.id)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              link
-              icon="delete"
-              @click="handleDelete(scope.row.id)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <pagination
-        v-if="total > 0"
-        v-model:total="total"
-        v-model:page="queryParams.page"
-        v-model:limit="queryParams.limit"
         @pagination="handleQuery"
-      />
+        @page-change="handleQuery"
+      >
+        <!-- 操作列插槽 -->
+        <template #operation="{ row }">
+          <el-button
+            type="primary"
+            size="small"
+            link
+            icon="position"
+            @click="handleOpenAssignPermDialog(row)"
+          >
+            分配权限
+          </el-button>
+          <el-button type="primary" size="small" link icon="edit" @click="handleOpenDialog(row.id)">
+            编辑
+          </el-button>
+          <el-button type="danger" size="small" link icon="delete" @click="handleDelete(row.id)">
+            删除
+          </el-button>
+        </template>
+      </BaseTable>
     </el-card>
 
     <!-- 角色表单弹窗 -->
@@ -190,6 +171,8 @@
 </template>
 
 <script setup lang="ts">
+import BaseTable from "@/components/BaseTable/index.vue";
+
 defineOptions({
   name: "Role",
   inheritAttrs: false,
@@ -207,9 +190,15 @@ const loading = ref(false);
 const selectIds = ref<number[]>([]);
 const total = ref(0);
 
+// 表格列配置
+const columns = reactive([
+  { label: "角色名称", prop: "name", minWidth: 100 },
+  { label: "角色编码", prop: "code", minWidth: 150 },
+]);
+
 const queryParams = reactive<RolePageQuery>({
   page: 1,
-  limit: 10,
+  limit: 3,
 });
 
 // 角色表格数据
@@ -263,8 +252,8 @@ function handleQuery() {
       ],
     },
     sort: [{ field: "id", order: "DESC" }],
-    page: 1,
-    limit: 10,
+    page: queryParams.page,
+    limit: queryParams.limit,
     resetCache: true,
   }).query();
 
