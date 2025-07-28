@@ -228,6 +228,7 @@
 </template>
 
 <script setup lang="ts">
+import BaseTable from "@/components/BaseTable/index.vue";
 import UserAPI, { UserForm, UserPageQuery, UserPageVO } from "@/api/system/user.api";
 
 import DeptAPI from "@/api/system/dept.api";

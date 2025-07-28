@@ -43,7 +43,7 @@
         <el-input v-model="filterText" placeholder="搜索图标" clearable @input="filterIcons" />
         <el-tabs v-model="activeTab" @tab-click="handleTabClick">
           <el-tab-pane label="SVG 图标" name="svg">
-            <el-scrollbar height="300px">
+            <el-scrollbar height="220px">
               <ul class="icon-grid">
                 <li
                   v-for="icon in filteredSvgIcons"
@@ -59,7 +59,7 @@
             </el-scrollbar>
           </el-tab-pane>
           <el-tab-pane label="Element 图标" name="element">
-            <el-scrollbar height="300px">
+            <el-scrollbar height="220px">
               <ul class="icon-grid">
                 <li
                   v-for="icon in filteredElementIcons"

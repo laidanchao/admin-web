@@ -64,40 +64,6 @@
           </el-button>
         </template>
       </BaseTable>
-
-      <!-- <el-table v-loading="loading" highlight-current-row :data="tableData" border>
-        <el-table-column label="字典名称" prop="name" />
-        <el-table-column label="字典编码" prop="code" />
-        <el-table-column label="状态" prop="isActive">
-          <template #default="scope">
-            <el-tag :type="scope.row.isActive ? 'success' : 'info'">
-              {{ scope.row.isActive ? "启用" : "禁用" }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column fixed="right" label="操作" align="center" width="220">
-          <template #default="scope">
-            <el-button
-              type="primary"
-              link
-              size="small"
-              icon="edit"
-              @click.stop="handleEditClick(scope.row.id)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              type="danger"
-              link
-              size="small"
-              icon="delete"
-              @click.stop="handleDelete(scope.row.id)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table> -->
     </el-card>
 
     <!--字典弹窗-->
@@ -145,6 +111,7 @@
 </template>
 
 <script setup lang="ts">
+import BaseTable from "@/components/BaseTable/index.vue";
 defineOptions({
   name: "Dict",
   inherititems: false,
@@ -168,8 +135,9 @@ const queryParams = reactive<DictPageQuery>({
 
 // 表格列配置
 const columns = reactive([
-  { label: "字典名称", prop: "name" },
-  { label: "字典编码", prop: "code" },
+  { label: "字典名称", prop: "name", minWidth: 100 },
+  { label: "字典编码", prop: "code", minWidth: 100 },
+  { label: "备注", prop: "description", minWidth: 150 },
   { label: "状态", prop: "isActive", minWidth: 80, slot: "status-column" },
 ]);
 
