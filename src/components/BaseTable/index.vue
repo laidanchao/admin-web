@@ -18,8 +18,19 @@
       <!-- 动态渲染列 -->
       <template v-for="column in columns" :key="column.prop">
         <el-table-column v-bind="column" :align="column.align || 'center'">
-          <template v-if="column.slot" #default="scope">
-            <slot :name="column.slot" :row="scope.row" />
+          <template #default="scope">
+            <!-- 1. 优先使用格式化函数 -->
+            <template v-if="column.formatter">
+              {{ column.formatter(scope.row[column.prop], scope.row) }}
+            </template>
+            <!-- 2. 其次使用自定义插槽 -->
+            <template v-else-if="column.slot">
+              <slot :name="column.slot" :row="scope.row" />
+            </template>
+            <!-- 3. 默认显示 -->
+            <template v-else>
+              {{ scope.row[column.prop] }}
+            </template>
           </template>
         </el-table-column>
       </template>

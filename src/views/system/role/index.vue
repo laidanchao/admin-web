@@ -32,13 +32,12 @@
       </div>
 
       <BaseTable
-        :table-data="roleList"
+        :table-data="tableData"
         :columns="columns"
         :total="total"
         :query-params="queryParams"
         :loading="loading"
         show-selection
-        show-index
         show-operation
         @selection-change="handleSelectionChange"
         @pagination="handleQuery"
@@ -198,11 +197,11 @@ const columns = reactive([
 
 const queryParams = reactive<RolePageQuery>({
   page: 1,
-  limit: 3,
+  limit: 10,
 });
 
 // 角色表格数据
-const roleList = ref<RolePageVO[]>();
+const tableData = ref<RolePageVO[]>();
 // 菜单权限下拉
 const menuPermOptions = ref<OptionType[]>([]);
 
@@ -259,7 +258,7 @@ function handleQuery() {
 
   RoleAPI.getPageList<RolePageVO>(queryString)
     .then((data) => {
-      roleList.value = data.data;
+      tableData.value = data.data;
       total.value = data.total;
     })
     .finally(() => {

@@ -75,73 +75,62 @@
               </el-button>
             </div>
           </div>
-
-          <el-table v-loading="loading" :data="pageData" @selection-change="handleSelectionChange">
-            <el-table-column type="selection" width="50" align="center" />
-            <el-table-column label="用户名" min-width="100" prop="username" />
-            <el-table-column label="昵称" min-width="100" align="center" prop="nickname" />
-            <el-table-column label="工号" min-width="100" align="center" prop="userNo" />
-            <el-table-column label="性别" min-width="80" align="center">
-              <template #default="scope">
-                <el-tag :type="GENDER_MAP[scope.row.gender].tagType">
-                  {{ GENDER_MAP[scope.row.gender].label }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="部门" min-width="100" align="center" prop="dept.name" />
-            <el-table-column label="手机号码" min-width="150" align="center" prop="phone" />
-            <el-table-column label="邮箱" min-width="150" align="center" prop="email" />
-            <el-table-column label="状态" min-width="80" align="center" prop="status">
-              <template #default="scope">
-                <el-tag :type="scope.row.status == 'NORMAL' ? 'success' : 'info'">
-                  {{ scope.row.status == "NORMAL" ? "正常" : "冻结" }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="创建时间" align="center" min-width="150" prop="createdAt" />
-            <el-table-column label="操作" fixed="right" min-width="220">
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="'sys:user:password:reset'"
-                  type="warning"
-                  icon="RefreshLeft"
-                  size="small"
-                  link
-                  @click="hancleResetPassword(scope.row)"
-                >
-                  重置密码
-                </el-button>
-                <el-button
-                  v-hasPerm="'sys:user:edit'"
-                  type="primary"
-                  icon="edit"
-                  link
-                  size="small"
-                  @click="handleOpenDialog(scope.row.id)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-hasPerm="'sys:user:delete'"
-                  type="danger"
-                  icon="delete"
-                  link
-                  size="small"
-                  @click="handleDelete(scope.row.id)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-
-          <pagination
-            v-if="total > 0"
-            v-model:total="total"
-            v-model:page="queryParams.page"
-            v-model:limit="queryParams.limit"
+          <BaseTable
+            :table-data="tableData"
+            :columns="columns"
+            :total="total"
+            :query-params="queryParams"
+            :loading="loading"
+            show-selection
+            show-operation
+            @selection-change="handleSelectionChange"
             @pagination="handleQuery"
-          />
+            @page-change="handleQuery"
+          >
+            <template #gender-column="{ row }">
+              <el-tag :type="GENDER_MAP[row.gender].tagType">
+                {{ GENDER_MAP[row.gender].label }}
+              </el-tag>
+            </template>
+            <template #status-column="{ row }">
+              <el-tag :type="row.status == 'NORMAL' ? 'success' : 'info'">
+                {{ row.status == "NORMAL" ? "正常" : "冻结" }}
+              </el-tag>
+            </template>
+            <!-- 操作列插槽 -->
+            <template #operation="{ row }">
+              <el-button
+                v-hasPerm="'sys:user:password:reset'"
+                type="warning"
+                icon="RefreshLeft"
+                size="small"
+                link
+                @click="hancleResetPassword(row)"
+              >
+                重置密码
+              </el-button>
+              <el-button
+                v-hasPerm="'sys:user:edit'"
+                type="primary"
+                icon="edit"
+                link
+                size="small"
+                @click="handleOpenDialog(row.id)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-hasPerm="'sys:user:delete'"
+                type="danger"
+                icon="delete"
+                link
+                size="small"
+                @click="handleDelete(row.id)"
+              >
+                删除
+              </el-button>
+            </template>
+          </BaseTable>
         </el-card>
       </el-col>
     </el-row>
@@ -261,7 +250,19 @@ const queryParams = reactive<UserPageQuery>({
   limit: 10,
 });
 
-const pageData = ref<UserPageVO[]>();
+// 表格列配置
+const columns = reactive([
+  { label: "用户名", prop: "username", minWidth: 100 },
+  { label: "昵称", prop: "nickname", minWidth: 150 },
+  { label: "工号", prop: "userNo", minWidth: 80 },
+  { label: "性别", prop: "gender", minWidth: 80, slot: "gender-column" },
+  { label: "部门", prop: "dept", minWidth: 100, formatter: (dept) => dept?.name || "-" },
+  { label: "手机号码", prop: "phone", minWidth: 150 },
+  { label: "邮箱", prop: "email", minWidth: 150 },
+  { label: "状态", prop: "status", minWidth: 80, slot: "status-column" },
+]);
+
+const tableData = ref<UserPageVO[]>();
 const total = ref(0);
 const loading = ref(false);
 
@@ -359,7 +360,7 @@ async function handleQuery() {
   UserAPI.getPageList<UserPageVO>(queryString)
     .then((response) => {
       console.log(response);
-      pageData.value = response.data;
+      tableData.value = response.data;
       total.value = response.total;
     })
     .finally(() => {

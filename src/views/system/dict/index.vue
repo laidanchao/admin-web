@@ -26,7 +26,46 @@
         </el-button>
       </div>
 
-      <el-table v-loading="loading" highlight-current-row :data="tableData" border>
+      <BaseTable
+        :table-data="tableData"
+        :columns="columns"
+        :total="total"
+        :query-params="queryParams"
+        :loading="loading"
+        show-selection
+        show-operation
+        @pagination="handleQuery"
+        @page-change="handleQuery"
+      >
+        <template #status-column="{ row }">
+          <el-tag :type="row.isActive ? 'success' : 'info'">
+            {{ row.isActive ? "启用" : "禁用" }}
+          </el-tag>
+        </template>
+        <!-- 操作列插槽 -->
+        <template #operation="{ row }">
+          <el-button
+            type="primary"
+            link
+            size="small"
+            icon="edit"
+            @click.stop="handleEditClick(row.id)"
+          >
+            编辑
+          </el-button>
+          <el-button
+            type="danger"
+            link
+            size="small"
+            icon="delete"
+            @click.stop="handleDelete(row.id)"
+          >
+            删除
+          </el-button>
+        </template>
+      </BaseTable>
+
+      <!-- <el-table v-loading="loading" highlight-current-row :data="tableData" border>
         <el-table-column label="字典名称" prop="name" />
         <el-table-column label="字典编码" prop="code" />
         <el-table-column label="状态" prop="isActive">
@@ -58,15 +97,7 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
-
-      <pagination
-        v-if="total > 0"
-        v-model:total="total"
-        v-model:page="queryParams.page"
-        v-model:limit="queryParams.limit"
-        @pagination="handleQuery"
-      />
+      </el-table> -->
     </el-card>
 
     <!--字典弹窗-->
@@ -134,6 +165,13 @@ const queryParams = reactive<DictPageQuery>({
   page: 1,
   limit: 10,
 });
+
+// 表格列配置
+const columns = reactive([
+  { label: "字典名称", prop: "name" },
+  { label: "字典编码", prop: "code" },
+  { label: "状态", prop: "isActive", minWidth: 80, slot: "status-column" },
+]);
 
 const tableData = ref<DictPageVO[]>();
 
