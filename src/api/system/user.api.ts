@@ -68,6 +68,22 @@ class UserAPI extends BaseApi {
       data: { password },
     });
   }
+
+  changePassword(data: PasswordChangeForm) {
+    return request({
+      url: `${USER_BASE_URL}/changePassword`,
+      method: "post",
+      data: data,
+    });
+  }
+
+  updateAvatar(data) {
+    return request({
+      url: `${USER_BASE_URL}/updateAvatar`,
+      method: "post",
+      data: data,
+    });
+  }
 }
 
 export default new UserAPI();
@@ -86,6 +102,14 @@ export interface UserInfo {
   /** 昵称 */
   nickname: string;
 
+  /** 性别 */
+  gender?: GENDER_ENUM;
+  /** 手机号 */
+  phone?: string;
+
+  /** 用户邮箱 */
+  email?: string;
+
   /** 头像URL */
   avatar?: string;
 
@@ -94,6 +118,13 @@ export interface UserInfo {
 
   /** 权限 */
   permissions: string[];
+
+  dept: DeptVO;
+
+  /** 创建时间 */
+  createdAt?: Date;
+
+  status: USER_STATUS_ENUM;
 }
 
 /**
@@ -104,12 +135,12 @@ export interface UserPageQuery extends PageQuery {
   keywords?: string;
 
   /** 用户状态 */
-  status?: number;
+  status?: USER_STATUS_ENUM;
 
   /** 部门ID */
   deptId?: number;
 
-  /** 开始时间 */
+  /** 创建时间 */
   createdAt?: [string, string];
 }
 
@@ -127,15 +158,12 @@ export interface UserPageVO {
   email?: string;
   userNo?: string;
   /** 性别 */
-  // gender?: number;
+  gender?: GENDER_ENUM;
   /** 手机号 */
   phone?: string;
   /** 用户昵称 */
   nickname?: string;
-  /** 角色名称，多个使用英文逗号(,)分割 */
-  roleNames?: string;
-  /** 用户状态(1:启用;0:禁用) */
-  status?: number;
+
   /** 用户名 */
   username?: string;
 
@@ -165,49 +193,47 @@ export interface UserForm {
   status?: USER_STATUS_ENUM;
   /** 用户名 */
   username?: string;
-  /** 密码 */
   password?: string;
   /** 工号 */
   userNo?: string;
 }
 
-/** 个人中心用户信息 */
-export interface UserProfileVO {
-  /** 用户ID */
-  id?: string;
+// /** 个人中心用户信息 */
+// export interface UserProfileVO {
+//   /** 用户ID */
+//   id: number;
 
-  /** 用户名 */
-  username?: string;
+//   /** 用户名 */
+//   username?: string;
 
-  /** 昵称 */
-  nickname?: string;
+//   /** 昵称 */
+//   nickname?: string;
 
-  /** 头像URL */
-  avatar?: string;
+//   /** 头像URL */
+//   avatar?: string;
 
-  /** 性别 */
-  gender?: number;
+//   /** 性别 */
+//   gender?: GENDER_ENUM;
 
-  /** 手机号 */
-  mobile?: string;
+//   /** 手机号 */
+//   phone?: string;
 
-  /** 邮箱 */
-  email?: string;
+//   /** 邮箱 */
+//   email?: string;
 
-  /** 部门名称 */
-  deptName?: string;
+//   /** 部门 */
+//   dept: DeptVO;
 
-  /** 角色名称，多个使用英文逗号(,)分割 */
-  roleNames?: string;
+//   roles: RolePageVO[];
 
-  /** 创建时间 */
-  createTime?: Date;
-}
+//   /** 创建时间 */
+//   createdAt?: Date;
+// }
 
 /** 个人中心用户信息表单 */
 export interface UserProfileForm {
   /** 用户ID */
-  id?: string;
+  id?: number;
 
   /** 用户名 */
   username?: string;
@@ -219,11 +245,20 @@ export interface UserProfileForm {
   avatar?: string;
 
   /** 性别 */
-  gender?: number;
+  gender?: GENDER_ENUM;
 
   /** 手机号 */
-  mobile?: string;
+  phone?: string;
 
   /** 邮箱 */
   email?: string;
+}
+
+export interface PasswordChangeForm {
+  /** 原密码 */
+  oldPassword?: string;
+  /** 新密码 */
+  newPassword?: string;
+  /** 确认新密码 */
+  confirmPassword?: string;
 }

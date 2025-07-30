@@ -23,7 +23,7 @@
                 <Edit />
               </el-icon>
             </div>
-            <div class="user-role">{{ userProfile.roleNames }}</div>
+            <div class="user-role">{{ userProfile.roles.map((f) => f.name).toString() }}</div>
           </div>
           <el-divider />
           <div class="user-stats">
@@ -54,7 +54,7 @@
           <el-descriptions :column="1" border>
             <el-descriptions-item label="用户名">
               {{ userProfile.username }}
-              <el-icon v-if="userProfile.gender === 1" class="gender-icon male">
+              <el-icon v-if="userProfile.gender === GENDER_ENUM.MALE" class="gender-icon male">
                 <Male />
               </el-icon>
               <el-icon v-else class="gender-icon female">
@@ -62,16 +62,16 @@
               </el-icon>
             </el-descriptions-item>
             <el-descriptions-item label="手机号码">
-              {{ userProfile.mobile || "未绑定" }}
+              {{ userProfile.phone || "未绑定" }}
             </el-descriptions-item>
             <el-descriptions-item label="邮箱">
               {{ userProfile.email || "未绑定" }}
             </el-descriptions-item>
             <el-descriptions-item label="部门">
-              {{ userProfile.deptName }}
+              {{ userProfile.dept?.name }}
             </el-descriptions-item>
             <el-descriptions-item label="创建时间">
-              {{ userProfile.createTime }}
+              {{ userProfile.createdAt }}
             </el-descriptions-item>
           </el-descriptions>
         </el-card>
@@ -108,7 +108,14 @@
           <el-input v-model="userProfileForm.nickname" />
         </el-form-item>
         <el-form-item label="性别">
-          <Dict v-model="userProfileForm.gender" code="gender" />
+          <el-select v-model="userProfileForm.gender">
+            <el-option
+              v-for="option in GENDER_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
         </el-form-item>
       </el-form>
 
@@ -142,13 +149,24 @@
 </template>
 
 <script lang="ts" setup>
-import UserAPI, { UserProfileVO, PasswordChangeForm, UserProfileForm } from "@/api/system/user.api";
+import UserAPI, { PasswordChangeForm, UserInfo, UserForm } from "@/api/system/user.api";
+import { GENDER_ENUM, USER_STATUS_ENUM } from "@/enums/system/user.enum";
+import { GENDER_OPTIONS } from "@/constants";
 
 import FileAPI from "@/api/file.api";
 
 import { Camera } from "@element-plus/icons-vue";
 
-const userProfile = ref<UserProfileVO>({});
+const userProfile = ref<UserInfo>({
+  id: 0,
+  username: "",
+  userNo: "",
+  nickname: "",
+  roles: [],
+  permissions: [],
+  dept: undefined,
+  status: USER_STATUS_ENUM.NORMAL,
+});
 
 const enum DialogType {
   ACCOUNT = "account",
@@ -163,7 +181,7 @@ const dialog = reactive({
   type: "" as DialogType, // 修改账号资料,修改密码、绑定手机、绑定邮箱
 });
 
-const userProfileForm = reactive<UserProfileForm>({});
+const userProfileForm = reactive<UserForm>({});
 const passwordChangeForm = reactive<PasswordChangeForm>({});
 
 // 修改密码校验规则
@@ -187,6 +205,9 @@ const handleOpenDialog = (type: DialogType) => {
       userProfileForm.id = userProfile.value.id;
       userProfileForm.nickname = userProfile.value.nickname;
       userProfileForm.gender = userProfile.value.gender;
+      userProfileForm.deptId = userProfile.value.dept.id;
+      userProfileForm.status = userProfile.value.status;
+      userProfileForm.roleIds = userProfile.value.roles.map((m) => m.id);
       break;
     case DialogType.PASSWORD:
       dialog.title = "修改密码";
@@ -199,7 +220,7 @@ const handleOpenDialog = (type: DialogType) => {
  */
 const handleSubmit = async () => {
   if (dialog.type === DialogType.ACCOUNT) {
-    UserAPI.updateProfile(userProfileForm).then(() => {
+    UserAPI.update(userProfile.value.id, userProfileForm).then(() => {
       ElMessage.success("账号资料修改成功");
       dialog.visible = false;
       loadUserProfile();
@@ -228,11 +249,11 @@ const handleFileChange = async (event: Event) => {
   if (file) {
     // 调用文件上传API
     try {
-      const data = await FileAPI.uploadFile(file);
+      const data = await FileAPI.uploadAvatar(file);
       // 更新用户头像
       userProfile.value.avatar = data.url;
       // 更新用户信息
-      await UserAPI.updateProfile({
+      await UserAPI.updateAvatar({
         avatar: data.url,
       });
     } catch (error) {
@@ -244,7 +265,7 @@ const handleFileChange = async (event: Event) => {
 
 /** 加载用户信息 */
 const loadUserProfile = async () => {
-  const data = await UserAPI.getProfile();
+  const data = await UserAPI.getMe();
   userProfile.value = data;
 };
 
