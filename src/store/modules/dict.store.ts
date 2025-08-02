@@ -1,5 +1,5 @@
 import { store } from "@/store";
-import DictAPI, { type DictItemOption } from "@/api/system/dict.api";
+import DictItemAPI, { DictItemOption } from "@/api/system/dict-item.api";
 
 export const useDictStore = defineStore("dict", () => {
   // 字典数据缓存
@@ -22,7 +22,7 @@ export const useDictStore = defineStore("dict", () => {
     if (dictCache.value[dictCode]) return;
     // 防止重复请求
     if (!requestQueue[dictCode]) {
-      requestQueue[dictCode] = DictAPI.getDictItems(dictCode).then((data) => {
+      requestQueue[dictCode] = DictItemAPI.getDictItems(dictCode).then((data) => {
         cacheDictItems(dictCode, data);
         Reflect.deleteProperty(requestQueue, dictCode);
       });
@@ -34,7 +34,8 @@ export const useDictStore = defineStore("dict", () => {
    * @param dictCode 字典编码
    * @returns 字典项列表
    */
-  const getDictItems = (dictCode: string): DictItemOption[] => {
+  const getDictItems = async (dictCode: string): Promise<DictItemOption[]> => {
+    await loadDictItems(dictCode);
     return dictCache.value[dictCode] || [];
   };
   /**

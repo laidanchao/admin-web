@@ -22,15 +22,7 @@
             </el-form-item>
 
             <el-form-item label="状态" prop="status">
-              <el-select
-                v-model="queryParams.status"
-                placeholder="全部"
-                clearable
-                class="!w-[100px]"
-              >
-                <el-option label="正常" value="NORMAL" />
-                <el-option label="冻结" value="FROZEN" />
-              </el-select>
+              <Dict v-model="queryParams.status" code="USER_STATUS" style="width: 150px" />
             </el-form-item>
 
             <el-form-item label="创建时间">
@@ -82,14 +74,13 @@
             :query-params="queryParams"
             :loading="loading"
             show-selection
-            show-operation
             @selection-change="handleSelectionChange"
             @pagination="handleQuery"
             @page-change="handleQuery"
           >
             <template #gender-column="{ row }">
-              <el-tag :type="GENDER_MAP[row.gender].tagType">
-                {{ GENDER_MAP[row.gender].label }}
+              <el-tag :type="genderMap[row.gender].tagType">
+                {{ genderMap[row.gender].label }}
               </el-tag>
             </template>
             <template #status-column="{ row }">
@@ -175,15 +166,7 @@
         </el-form-item>
 
         <el-form-item label="性别" prop="gender">
-          <!-- <Dict v-model="formData.gender" code="gender" /> -->
-          <el-select v-model="formData.gender">
-            <el-option
-              v-for="option in GENDER_OPTIONS"
-              :key="option.value"
-              :label="option.label"
-              :value="option.value"
-            />
-          </el-select>
+          <Dict v-model="formData.gender" code="GENDER" style="width: 100%" />
         </el-form-item>
 
         <el-form-item label="角色" prop="roleIds">
@@ -206,14 +189,7 @@
         </el-form-item>
 
         <el-form-item label="状态" prop="status">
-          <el-switch
-            v-model="formData.status"
-            inline-prompt
-            active-text="正常"
-            inactive-text="冻结"
-            :active-value="USER_STATUS_ENUM.NORMAL"
-            :inactive-value="USER_STATUS_ENUM.FROZEN"
-          />
+          <Dict v-model="formData.status" code="USER_STATUS" style="width: 100%" />
         </el-form-item>
       </el-form>
 
@@ -228,7 +204,6 @@
 </template>
 
 <script setup lang="ts">
-import BaseTable from "@/components/BaseTable/index.vue";
 import UserAPI, { UserForm, UserPageQuery, UserPageVO } from "@/api/system/user.api";
 
 import DeptAPI from "@/api/system/dept.api";
@@ -236,8 +211,9 @@ import RoleAPI from "@/api/system/role.api";
 
 import DeptTree from "./components/DeptTree.vue";
 import { RequestQueryBuilder } from "@nestjsx/crud-request";
-import { GENDER_OPTIONS, GENDER_MAP, USER_STATUS_OPTIONS } from "@/constants";
-import { USER_STATUS_ENUM } from "@/enums/system/user.enum";
+import { USER_STATUS_ENUM } from "@/enums";
+import { useDictStore } from "@/store";
+import { mapKeys } from "lodash-es";
 
 defineOptions({
   name: "User",
@@ -245,6 +221,7 @@ defineOptions({
 });
 const queryFormRef = ref();
 const userFormRef = ref();
+const genderMap = ref();
 
 const queryParams = reactive<UserPageQuery>({
   page: 1,
@@ -254,13 +231,14 @@ const queryParams = reactive<UserPageQuery>({
 // 表格列配置
 const columns = reactive([
   { label: "用户名", prop: "username", minWidth: 100 },
-  { label: "昵称", prop: "nickname", minWidth: 150 },
+  { label: "昵称", prop: "nickname", minWidth: 100 },
   { label: "工号", prop: "userNo", minWidth: 80 },
   { label: "性别", prop: "gender", minWidth: 80, slot: "gender-column" },
   { label: "部门", prop: "dept", minWidth: 100, formatter: (dept) => dept?.name || "-" },
   { label: "手机号码", prop: "phone", minWidth: 150 },
   { label: "邮箱", prop: "email", minWidth: 150 },
   { label: "状态", prop: "status", minWidth: 80, slot: "status-column" },
+  { label: "操作", width: 250, slot: "operation", fixed: "right" },
 ]);
 
 const tableData = ref<UserPageVO[]>();
@@ -346,15 +324,12 @@ async function handleQuery() {
             { phone: { $cont: queryParams.keywords } },
           ],
         },
-        {
-          $and: [{ "dept.id": { $in: deptIds } }],
-        },
+        { "dept.id": { $in: deptIds } },
       ],
     },
     join: [{ field: "dept" }],
-    sort: [{ field: "id", order: "DESC" }],
-    page: 1,
-    limit: 10,
+    page: queryParams.page,
+    limit: queryParams.limit,
     resetCache: true,
   }).query();
 
@@ -495,7 +470,13 @@ function handleDelete(id?: number) {
   );
 }
 
-onMounted(() => {
-  handleQuery();
+async function loadDictItems() {
+  const genderDictItems = await useDictStore().getDictItems("GENDER");
+  genderMap.value = mapKeys(genderDictItems, "value");
+}
+
+onMounted(async () => {
+  await loadDictItems();
+  await handleQuery();
 });
 </script>

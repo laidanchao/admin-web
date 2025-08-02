@@ -45,6 +45,8 @@ export interface DictPageVO {
    * 是否激活
    */
   isActive: boolean;
+
+  desc: number;
 }
 
 /**
@@ -66,9 +68,9 @@ export interface DictForm {
   /**
    * 是否激活
    */
-  isActive: boolean;
+  isActive?: boolean;
   /**
-   * 描述
+   * 备注
    */
-  description?: string;
+  desc?: string;
 }

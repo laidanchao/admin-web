@@ -3,7 +3,7 @@ import { MenuVO } from "./menu.api";
 import { RolePageVO } from "./role.api";
 import { DeptVO } from "./dept.api";
 import BaseApi from "../base.api";
-import { GENDER_ENUM, USER_STATUS_ENUM } from "@/enums/system/user.enum";
+import { GENDER_ENUM, USER_STATUS_ENUM } from "@/enums";
 
 const USER_BASE_URL = "/api/sys/user";
 

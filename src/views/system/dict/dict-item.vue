@@ -1,18 +1,15 @@
-<!-- 字典 -->
+<!-- 字典项 -->
 <template>
   <div class="app-container">
-    <div class="search-bar">
+    <div class="search-bar mt-5">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="关键字" prop="keywords">
           <el-input
             v-model="queryParams.keywords"
-            placeholder="客户名/用户名/手机号"
+            placeholder="字典标签/字典值"
             clearable
             @keyup.enter="handleQuery"
           />
-        </el-form-item>
-        <el-form-item label="客户类型" prop="clientType">
-          <Dict v-model="queryParams.clientType" code="CLIENT_TYPE" style="width: 150px" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
@@ -24,9 +21,6 @@
     <el-card shadow="never">
       <div class="mb-[10px]">
         <el-button type="success" icon="plus" @click="handleAddClick()">新增</el-button>
-        <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
-          删除
-        </el-button>
       </div>
 
       <BaseTable
@@ -38,9 +32,9 @@
         @pagination="handleQuery"
         @page-change="handleQuery"
       >
-        <template #client-type-column="{ row }">
-          <el-tag :type="clientTypeMap[row.clientType].tagType">
-            {{ clientTypeMap[row.clientType].label }}
+        <template #is-active-column="{ row }">
+          <el-tag :type="row.isActive ? 'success' : 'info'">
+            {{ row.isActive ? "启用" : "禁用" }}
           </el-tag>
         </template>
         <!-- 操作列插槽 -->
@@ -67,45 +61,64 @@
       </BaseTable>
     </el-card>
 
-    <!--客户信息弹窗-->
+    <!--字典项弹窗-->
     <el-dialog
       v-model="dialog.visible"
       :title="dialog.title"
-      width="450px"
+      width="600px"
       @close="handleCloseDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="computedRules" label-width="100px">
-        <el-card shadow="never">
-          <el-form-item label="客户名" prop="clientName">
-            <el-input v-model="formData.clientName" placeholder="请输入客户名" />
-          </el-form-item>
-          <el-form-item label="客户类型" prop="clientType">
-            <Dict v-model="formData.clientType" code="CLIENT_TYPE" :clearable="false" />
-          </el-form-item>
-          <el-form-item label="用户名" prop="username">
-            <el-input v-model="formData.username" placeholder="请输入用户名" />
-          </el-form-item>
-          <el-form-item label="密码" prop="password">
-            <el-input v-model="formData.password" placeholder="请输入密码" />
-          </el-form-item>
-          <el-form-item label="手机号" prop="phone">
-            <el-input v-model="formData.phone" placeholder="请输入手机号" />
-          </el-form-item>
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="formData.email" placeholder="请输入邮箱" />
-          </el-form-item>
-          <el-form-item label="qq" prop="qq">
-            <el-input v-model="formData.qq" placeholder="请输入qq" />
-          </el-form-item>
-          <el-form-item label="地址" prop="address">
-            <el-input
-              v-model="formData.address"
-              :rows="2"
-              type="textarea"
-              placeholder="请输入地址"
-            />
-          </el-form-item>
-        </el-card>
+        <el-form-item label="字典编码" prop="dictCode">
+          <el-input v-model="formData.dictCode" placeholder="请输入字典编码" disabled />
+        </el-form-item>
+        <el-form-item label="字典项名称" prop="itemName">
+          <el-input v-model="formData.itemName" placeholder="请输入字典项名称" />
+        </el-form-item>
+        <el-form-item label="字典项编码" prop="itemCode">
+          <el-input v-model="formData.itemCode" placeholder="请输入字典项编码" />
+        </el-form-item>
+        <el-form-item label="字典项描述" prop="itemDesc">
+          <el-input v-model="formData.itemDesc" placeholder="请输入字典项描述" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="formData.isActive">
+            <el-radio :value="true">启用</el-radio>
+            <el-radio :value="false">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <div class="flex-y-center">
+              标签类型
+              <el-tooltip>
+                <template #content>回显样式，为空时则显示 '文本'</template>
+                <el-icon class="ml-1 cursor-pointer">
+                  <QuestionFilled />
+                </el-icon>
+              </el-tooltip>
+            </div>
+          </template>
+          <el-select
+            v-model="formData.tagType"
+            placeholder="请选择标签类型"
+            clearable
+            @clear="formData.tagType = ''"
+          >
+            <template #label="{ value }">
+              <el-tag v-if="value" :type="value">
+                {{ formData.itemName ? formData.itemName : "字典项名称" }}
+              </el-tag>
+            </template>
+            <!-- <el-option label="默认文本" value="" /> -->
+            <el-option v-for="type in TAG_TYPE_ENUM" :key="type" :label="type" :value="type">
+              <div flex-y-center gap-10px>
+                <el-tag :type="type">{{ formData.itemName ?? "字典项名称" }}</el-tag>
+                <span>{{ type }}</span>
+              </div>
+            </el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
 
       <template #footer>
@@ -119,56 +132,57 @@
 </template>
 
 <script setup lang="ts">
-import BaseTable from "@/components/BaseTable/index.vue";
 defineOptions({
-  name: "Dict",
+  name: "DictItem",
   inherititems: false,
 });
 
-import ClientAPI, { ClientPageQuery, ClientPageVO, ClientForm } from "@/api/crm/client.api";
-
+import DictItemAPI, {
+  DictItemPageQuery,
+  DictItemPageVO,
+  DictItemForm,
+} from "@/api/system/dict-item.api";
+import { TAG_TYPE_ENUM } from "@/enums";
 import { RequestQueryBuilder } from "@nestjsx/crud-request";
-import { useDictStore } from "@/store/modules/dict.store";
-import { mapKeys } from "lodash-es";
+
+const route = useRoute();
+
+const dictCode = ref(route.query.dictCode as string);
 
 const queryFormRef = ref();
+
 const dataFormRef = ref();
-const clientTypeMap = ref();
 
 const loading = ref(false);
-const ids = ref<number[]>([]);
 const total = ref(0);
 
-const queryParams = reactive<ClientPageQuery>({
+const queryParams = reactive<DictItemPageQuery>({
+  dictCode: dictCode.value,
   page: 1,
   limit: 10,
 });
 
-// 表格列配置
 const columns = reactive([
-  { label: "客户名", prop: "clientName", minWidth: 100 },
-  { label: "用户名", prop: "username", minWidth: 100 },
-  { label: "客户类型", prop: "clientType", minWidth: 100, slot: "client-type-column" },
-  { label: "手机号", prop: "phone", minWidth: 100 },
-  { label: "邮箱", prop: "email", minWidth: 100 },
-  { label: "qq", prop: "qq", minWidth: 100 },
-  { label: "创建时间", prop: "createdAt", minWidth: 120 },
+  { label: "字典项名称", prop: "itemName", minWidth: 100 },
+  { label: "字典项编码", prop: "itemCode", minWidth: 100 },
+  { label: "描述", prop: "itemDesc", minWidth: 150 },
+  { label: "状态", prop: "isActive", minWidth: 100, slot: "is-active-column" },
   { label: "操作", minWidth: 150, slot: "operation", fixed: "right" },
 ]);
 
-const tableData = ref<ClientPageVO[]>();
+const tableData = ref<DictItemPageVO[]>();
 
 const dialog = reactive({
   title: "",
   visible: false,
 });
 
-const formData = reactive<ClientForm>({});
+const formData = reactive<DictItemForm>({ dictCode: dictCode.value, isActive: true });
 
 const computedRules = computed(() => {
   const rules: Partial<Record<string, any>> = {
-    clientName: [{ required: true, message: "请输入客户名", trigger: "blur" }],
-    clientType: [{ required: true, message: "请选择客户类型", trigger: "blur" }],
+    itemName: [{ required: true, message: "请输入字典项名称", trigger: "blur" }],
+    itemCode: [{ required: true, message: "请输入字典项编码", trigger: "blur" }],
   };
   return rules;
 });
@@ -176,18 +190,19 @@ const computedRules = computed(() => {
 // 查询
 function handleQuery() {
   loading.value = true;
+
   const queryString = RequestQueryBuilder.create({
-    fields: ["id", "clientName", "username", "clientType", "phone", "qq", "email", "createdAt"],
+    fields: ["id", "itemCode", "itemName", "itemDesc", "isActive", "createdAt"],
     search: {
       $and: [
         {
           $or: [
-            { clientName: { $cont: queryParams.keywords } },
-            { phone: { $cont: queryParams.keywords } },
-            { username: { $cont: queryParams.keywords } },
+            { itemCode: { $cont: queryParams.keywords } },
+            { itemName: { $cont: queryParams.keywords } },
           ],
         },
-        { clientType: queryParams.clientType },
+        { isActive: queryParams.isActive },
+        { dictCode: queryParams.dictCode },
       ],
     },
     page: queryParams.page,
@@ -195,7 +210,7 @@ function handleQuery() {
     resetCache: true,
   }).query();
 
-  ClientAPI.getPageList<ClientPageVO>(queryString)
+  DictItemAPI.getPageList<DictItemPageVO>(queryString)
     .then((data) => {
       tableData.value = data.data;
       total.value = data.total;
@@ -212,33 +227,30 @@ function handleResetQuery() {
   handleQuery();
 }
 
-// 新增客户
+// 新增字典
 function handleAddClick() {
   dialog.visible = true;
-  dialog.title = "新增客户";
+  dialog.title = "新增字典项";
 }
 
-/**
- * 编辑客户
- *
- * @param id 字典ID
- */
+// 打开弹窗
 function handleEditClick(id: number) {
   dialog.visible = true;
-  dialog.title = "修改客户";
-  ClientAPI.getOne(id).then((data) => {
+  dialog.title = "修改字典项";
+  DictItemAPI.getOne(id).then((data) => {
     Object.assign(formData, data);
   });
 }
 
-// 提交字典表单
+// 提交表单
 function handleSubmitClick() {
   dataFormRef.value.validate((isValid: boolean) => {
     if (isValid) {
       loading.value = true;
       const id = formData.id;
+      formData.dictCode = dictCode.value;
       if (id) {
-        ClientAPI.updateOne(id, formData)
+        DictItemAPI.updateOne(id, formData)
           .then(() => {
             ElMessage.success("修改成功");
             handleCloseDialog();
@@ -246,7 +258,7 @@ function handleSubmitClick() {
           })
           .finally(() => (loading.value = false));
       } else {
-        ClientAPI.createOne(formData)
+        DictItemAPI.createOne(formData)
           .then(() => {
             ElMessage.success("新增成功");
             handleCloseDialog();
@@ -258,7 +270,7 @@ function handleSubmitClick() {
   });
 }
 
-// 关闭字典弹窗
+// 关闭弹窗
 function handleCloseDialog() {
   dialog.visible = false;
 
@@ -266,6 +278,7 @@ function handleCloseDialog() {
   dataFormRef.value.clearValidate();
 
   formData.id = undefined;
+  formData.isActive = true;
 }
 /**
  * 删除字典
@@ -275,16 +288,15 @@ function handleCloseDialog() {
 function handleDelete(id?: number) {
   if (!id) {
     ElMessage.warning("请勾选删除项");
-    return false;
+    return;
   }
-
   ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   }).then(
     () => {
-      ClientAPI.deleteOne(id).then(() => {
+      DictItemAPI.deleteOne(id).then(() => {
         ElMessage.success("删除成功");
         handleResetQuery();
       });
@@ -295,13 +307,15 @@ function handleDelete(id?: number) {
   );
 }
 
-async function loadDictItems() {
-  const clientTypeDictItems = await useDictStore().getDictItems("CLIENT_TYPE");
-  clientTypeMap.value = mapKeys(clientTypeDictItems, "value");
-}
-
-onMounted(async () => {
-  await loadDictItems();
-  await handleQuery();
+onMounted(() => {
+  handleQuery();
 });
+
+// // 同一路由参数变化时更新数据
+// onBeforeRouteUpdate((to) => {
+//   console.log("to", to.query.code);
+//   queryParams.dictCode = to.query.code as string;
+//   formData.dictCode = to.query.code as string;
+//   handleQuery();
+// });
 </script>

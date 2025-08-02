@@ -34,20 +34,6 @@
           </template>
         </el-table-column>
       </template>
-
-      <!-- 固定操作列 -->
-      <el-table-column
-        v-if="showOperation"
-        :label="operationColumn.label || '操作'"
-        :width="operationColumn.width"
-        :min-width="operationColumn.minWidth || '220'"
-        :fixed="operationColumn.fixed || 'right'"
-        align="center"
-      >
-        <template #default="scope">
-          <slot name="operation" :row="scope.row" />
-        </template>
-      </el-table-column>
     </el-table>
 
     <!-- 分页组件 -->
@@ -69,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 
 const props = defineProps({
   tableData: {
@@ -114,10 +100,6 @@ const props = defineProps({
   },
   // 是否显示序号列
   showIndex: {
-    type: Boolean,
-    default: false,
-  },
-  showOperation: {
     type: Boolean,
     default: false,
   },

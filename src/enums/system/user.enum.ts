@@ -4,6 +4,12 @@ export enum GENDER_ENUM {
   "FEMALE" = "FEMALE", // 女
 }
 
+/** 性别描述 */
+export enum GENDER_ENUM_DESC {
+  "MALE" = "男",
+  "FEMALE" = "女",
+}
+
 /** 用户状态 */
 export enum USER_STATUS_ENUM {
   "NORMAL" = "NORMAL",

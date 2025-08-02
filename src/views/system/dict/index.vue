@@ -11,6 +11,18 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
+        <el-form-item label="状态" prop="isActive">
+          <el-select
+            v-model="queryParams.isActive"
+            clearable
+            placeholder="全部"
+            class="!w-[100px]"
+            @keyup.enter="handleQuery"
+          >
+            <el-option label="启用" :value="true" />
+            <el-option label="禁用" :value="false" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
           <el-button icon="refresh" @click="handleResetQuery()">重置</el-button>
@@ -32,8 +44,6 @@
         :total="total"
         :query-params="queryParams"
         :loading="loading"
-        show-selection
-        show-operation
         @pagination="handleQuery"
         @page-change="handleQuery"
       >
@@ -44,6 +54,12 @@
         </template>
         <!-- 操作列插槽 -->
         <template #operation="{ row }">
+          <el-button type="primary" link size="small" @click.stop="handleOpenDictData(row)">
+            <template #icon>
+              <Collection />
+            </template>
+            字典数据
+          </el-button>
           <el-button
             type="primary"
             link
@@ -80,22 +96,18 @@
           </el-form-item>
 
           <el-form-item label="字典编码" prop="code">
-            <el-input
-              v-model="formData.code"
-              :disabled="!!formData.id"
-              placeholder="请输入字典编码"
-            />
+            <el-input v-model="formData.code" placeholder="请输入字典编码" />
           </el-form-item>
 
-          <el-form-item label="状态">
+          <el-form-item label="状态" prop="isActive">
             <el-radio-group v-model="formData.isActive">
               <el-radio :value="true">启用</el-radio>
               <el-radio :value="false">禁用</el-radio>
             </el-radio-group>
           </el-form-item>
 
-          <el-form-item label="备注" prop="description">
-            <el-input v-model="formData.description" type="textarea" placeholder="请输入备注" />
+          <el-form-item label="备注" prop="desc">
+            <el-input v-model="formData.desc" type="textarea" placeholder="请输入备注" />
           </el-form-item>
         </el-card>
       </el-form>
@@ -111,7 +123,6 @@
 </template>
 
 <script setup lang="ts">
-import BaseTable from "@/components/BaseTable/index.vue";
 defineOptions({
   name: "Dict",
   inherititems: false,
@@ -119,6 +130,7 @@ defineOptions({
 
 import DictAPI, { DictPageQuery, DictPageVO, DictForm } from "@/api/system/dict.api";
 
+import router from "@/router";
 import { RequestQueryBuilder } from "@nestjsx/crud-request";
 
 const queryFormRef = ref();
@@ -137,8 +149,9 @@ const queryParams = reactive<DictPageQuery>({
 const columns = reactive([
   { label: "字典名称", prop: "name", minWidth: 100 },
   { label: "字典编码", prop: "code", minWidth: 100 },
-  { label: "备注", prop: "description", minWidth: 150 },
-  { label: "状态", prop: "isActive", minWidth: 80, slot: "status-column" },
+  { label: "描述", prop: "desc", minWidth: 150 },
+  { label: "状态", prop: "isActive", minWidth: 100, slot: "is-active-column" },
+  { label: "操作", minWidth: 150, slot: "operation", fixed: "right" },
 ]);
 
 const tableData = ref<DictPageVO[]>();
@@ -148,7 +161,7 @@ const dialog = reactive({
   visible: false,
 });
 
-const formData = reactive<DictForm>({ isActive: true });
+const formData = reactive<DictForm>({});
 
 const computedRules = computed(() => {
   const rules: Partial<Record<string, any>> = {
@@ -161,8 +174,9 @@ const computedRules = computed(() => {
 // 查询
 function handleQuery() {
   loading.value = true;
+
   const queryString = RequestQueryBuilder.create({
-    fields: ["id", "code", "name", "description", "isActive", "createdAt"],
+    fields: ["id", "code", "name", "desc", "isActive", "createdAt"],
     search: {
       $and: [
         {
@@ -171,14 +185,11 @@ function handleQuery() {
             { name: { $cont: queryParams.keywords } },
           ],
         },
-        {
-          $and: [{ isActive: queryParams.isActive }],
-        },
+        { isActive: queryParams.isActive },
       ],
     },
-    sort: [{ field: "id", order: "DESC" }],
-    page: 1,
-    limit: 10,
+    page: queryParams.page,
+    limit: queryParams.limit,
     resetCache: true,
   }).query();
 
@@ -206,7 +217,7 @@ function handleAddClick() {
 }
 
 /**
- * 编辑字典
+ * 修改字典
  *
  * @param id 字典ID
  */
@@ -262,9 +273,8 @@ function handleCloseDialog() {
 function handleDelete(id?: number) {
   if (!id) {
     ElMessage.warning("请勾选删除项");
-    return false;
+    return;
   }
-
   ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -280,6 +290,14 @@ function handleDelete(id?: number) {
       ElMessage.info("已取消删除");
     }
   );
+}
+
+// 打开字典项
+function handleOpenDictData(row: DictPageVO) {
+  router.push({
+    path: "/system/dict-item",
+    query: { dictCode: row.code, title: "【" + row.name + "】字典数据" },
+  });
 }
 
 onMounted(() => {

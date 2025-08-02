@@ -37,5 +37,11 @@ export const sysRoute: RouteRecordRaw = {
       name: "/sys/dict",
       meta: { title: "字典管理", noCache: true },
     },
+    {
+      path: "dict-item",
+      component: () => import("@/views/system/dict/dict-item.vue"),
+      name: "/sys/dict-item",
+      meta: { title: "字典项管理", noCache: true, hidden: true },
+    },
   ],
 };

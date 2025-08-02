@@ -1,6 +1,6 @@
-import { MenuTypeEnum } from "@/enums/system/menu.enum";
 import request from "@/utils/request";
 import BaseApi from "../base.api";
+import { MenuTypeEnum } from "@/enums";
 // 菜单基础URL
 const MENU_BASE_URL = "/api/sys/menu";
 

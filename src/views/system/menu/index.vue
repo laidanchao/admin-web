@@ -199,7 +199,7 @@ defineOptions({
 });
 
 import MenuAPI, { MenuQuery, MenuForm, MenuVO } from "@/api/system/menu.api";
-import { MenuTypeEnum, MenuTypeConfig } from "@/enums/system/menu.enum";
+import { MenuTypeEnum, MenuTypeConfig } from "@/enums";
 
 const queryFormRef = ref();
 const menuFormRef = ref();
@@ -275,7 +275,7 @@ function handleOpenDialog(parentId?: number, menuId?: number) {
     .then(() => {
       dialog.visible = true;
       if (menuId) {
-        dialog.title = "编辑菜单";
+        dialog.title = "修改菜单";
         MenuAPI.getOne<MenuForm>(menuId).then((data) => {
           data.parentId = data.parentId || 0;
           initialMenuFormData.value = { ...data };
