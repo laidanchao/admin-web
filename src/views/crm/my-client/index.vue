@@ -33,7 +33,6 @@
         :query-params="queryParams"
         :loading="loading"
         show-selection
-        show-operation
         @pagination="handleQuery"
         @page-change="handleQuery"
       >
@@ -139,6 +138,7 @@ const columns = reactive([
   { label: "字典编码", prop: "code", minWidth: 100 },
   { label: "备注", prop: "description", minWidth: 150 },
   { label: "状态", prop: "isActive", minWidth: 80, slot: "status-column" },
+  { label: "操作", minWidth: 150, slot: "operation", fixed: "right" },
 ]);
 
 const tableData = ref<DictPageVO[]>();
@@ -171,14 +171,11 @@ function handleQuery() {
             { name: { $cont: queryParams.keywords } },
           ],
         },
-        {
-          $and: [{ isActive: queryParams.isActive }],
-        },
+        { isActive: queryParams.isActive },
       ],
     },
-    sort: [{ field: "id", order: "DESC" }],
-    page: 1,
-    limit: 10,
+    page: queryParams.page,
+    limit: queryParams.limit,
     resetCache: true,
   }).query();
 

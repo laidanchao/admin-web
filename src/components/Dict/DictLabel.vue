@@ -29,10 +29,8 @@ const dictStore = useDictStore();
  * @returns 包含 label 和 tagType 的对象
  */
 const getLabelAndTagByValue = async (dictCode: string, value: any) => {
-  // 按需加载字典数据
-  await dictStore.loadDictItems(dictCode);
-  // 从缓存中获取字典数据
-  const dictItems = dictStore.getDictItems(dictCode);
+  // 获取字典数据
+  const dictItems = await dictStore.getDictItems(dictCode);
   // 查找对应的字典项
   const dictItem = dictItems.find((item) => item.value == value);
   return {

@@ -4,7 +4,7 @@
     v-model="selectedValue"
     :placeholder="placeholder"
     :disabled="disabled"
-    clearable
+    :clearable="clearable"
     :style="style"
     @change="handleChange"
   >
@@ -78,6 +78,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  clearable: {
+    type: Boolean,
+    default: true,
+  },
   style: {
     type: Object,
     default: () => {
@@ -128,6 +132,6 @@ function handleChange(val: any) {
 // 获取字典数据
 onMounted(async () => {
   await dictStore.loadDictItems(props.code);
-  options.value = dictStore.getDictItems(props.code);
+  options.value = await dictStore.getDictItems(props.code);
 });
 </script>

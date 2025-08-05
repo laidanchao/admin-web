@@ -102,20 +102,13 @@
         v-if="dialog.type === DialogType.ACCOUNT"
         ref="userProfileFormRef"
         :model="userProfileForm"
-        :label-width="100"
+        :label-width="60"
       >
         <el-form-item label="昵称">
           <el-input v-model="userProfileForm.nickname" />
         </el-form-item>
         <el-form-item label="性别">
-          <el-select v-model="userProfileForm.gender">
-            <el-option
-              v-for="option in GENDER_OPTIONS"
-              :key="option.value"
-              :label="option.label"
-              :value="option.value"
-            />
-          </el-select>
+          <Dict v-model="userProfileForm.gender" code="GENDER" style="width: 100%" />
         </el-form-item>
       </el-form>
 
@@ -150,8 +143,7 @@
 
 <script lang="ts" setup>
 import UserAPI, { PasswordChangeForm, UserInfo, UserForm } from "@/api/system/user.api";
-import { GENDER_ENUM, USER_STATUS_ENUM } from "@/enums/system/user.enum";
-import { GENDER_OPTIONS } from "@/constants";
+import { GENDER_ENUM, USER_STATUS_ENUM } from "@/enums";
 
 import FileAPI from "@/api/file.api";
 

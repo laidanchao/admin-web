@@ -38,7 +38,6 @@
         :query-params="queryParams"
         :loading="loading"
         show-selection
-        show-operation
         @selection-change="handleSelectionChange"
         @pagination="handleQuery"
         @page-change="handleQuery"
@@ -170,8 +169,6 @@
 </template>
 
 <script setup lang="ts">
-import BaseTable from "@/components/BaseTable/index.vue";
-
 defineOptions({
   name: "Role",
   inheritAttrs: false,
@@ -250,7 +247,6 @@ function handleQuery() {
         },
       ],
     },
-    sort: [{ field: "id", order: "DESC" }],
     page: queryParams.page,
     limit: queryParams.limit,
     resetCache: true,
