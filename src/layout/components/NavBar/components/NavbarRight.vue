@@ -12,7 +12,11 @@
     <!-- 用户头像（个人中心、注销登录等） -->
     <el-dropdown trigger="click">
       <div class="user-profile">
-        <img class="user-profile__avatar" :src="userStore.userInfo.avatar" />
+        <el-avatar
+          class="user-profile__avatar"
+          :src="userStore.userInfo.avatar"
+          :icon="UserFilled"
+        ></el-avatar>
         <span class="user-profile__name">{{ userStore.userInfo.username }}</span>
       </div>
       <template #dropdown>
@@ -34,6 +38,7 @@ import defaultSettings from "@/settings";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { ThemeMode } from "@/enums/settings/theme.enum";
 import { useAppStore, useSettingsStore, useUserStore, useTagsViewStore } from "@/store";
+import { UserFilled } from "@element-plus/icons-vue";
 
 const appStore = useAppStore();
 const settingStore = useSettingsStore();

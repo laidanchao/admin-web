@@ -6,7 +6,9 @@
         <el-card class="user-card">
           <div class="user-info">
             <div class="avatar-wrapper">
-              <el-avatar :src="userProfile.avatar" :size="100" />
+              <el-avatar :src="userProfile.avatar" :size="100">
+                {{ userStore.userInfo.username }}
+              </el-avatar>
               <el-button
                 type="info"
                 class="avatar-edit-btn"
@@ -148,6 +150,9 @@ import { GENDER_ENUM, USER_STATUS_ENUM } from "@/enums";
 import FileAPI from "@/api/file.api";
 
 import { Camera } from "@element-plus/icons-vue";
+import { useUserStore } from "@/store/modules/user.store";
+
+const userStore = useUserStore();
 
 const userProfile = ref<UserInfo>({
   id: 0,
@@ -216,6 +221,7 @@ const handleSubmit = async () => {
       ElMessage.success("账号资料修改成功");
       dialog.visible = false;
       loadUserProfile();
+      userStore.getUserInfo();
     });
   } else if (dialog.type === DialogType.PASSWORD) {
     if (passwordChangeForm.newPassword !== passwordChangeForm.confirmPassword) {
@@ -248,6 +254,7 @@ const handleFileChange = async (event: Event) => {
       await UserAPI.updateAvatar({
         avatar: data.url,
       });
+      userStore.getUserInfo();
     } catch (error) {
       console.error("头像上传失败：" + error);
       ElMessage.error("头像上传失败");

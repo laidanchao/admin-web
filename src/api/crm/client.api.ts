@@ -1,5 +1,6 @@
 import { CLIENT_TYPE_ENUM } from "@/enums/crm/client.enum";
 import BaseApi from "../base.api";
+import { UserInfo } from "../system/user.api";
 
 const CLIENT_BASE_URL = "/api/crm/client";
 
@@ -54,6 +55,14 @@ export interface ClientPageVO {
    * 客户地址
    */
   address: string;
+  /**
+   * 销售员
+   */
+  saler?: UserInfo;
+  /**
+   * 销售员id
+   */
+  salerId?: number;
 }
 
 /**
@@ -87,4 +96,6 @@ export interface ClientForm {
    * 客户地址
    */
   address?: string;
+  /** 销售员id */
+  salerId?: number;
 }

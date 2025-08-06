@@ -1,4 +1,4 @@
-<!-- 字典 -->
+<!-- 客户 -->
 <template>
   <div class="app-container">
     <div class="search-bar">
@@ -45,6 +45,16 @@
         </template>
         <!-- 操作列插槽 -->
         <template #operation="{ row }">
+          <el-button
+            v-hasPerm="['crm:client:appoint']"
+            :type="row.salerId ? 'primary' : 'warning'"
+            link
+            size="small"
+            icon="edit"
+            @click.stop="handleAppointClick(row)"
+          >
+            {{ row.salerId ? "取消分配" : "分配销售员" }}
+          </el-button>
           <el-button
             type="primary"
             link
@@ -115,6 +125,36 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 客户分配弹窗 -->
+    <el-dialog
+      v-model="appiontDialog.visible"
+      title="分配客户"
+      width="450px"
+      @close="handleCloseAppiontDialog"
+    >
+      <el-form ref="dataAppiontFormRef" :model="formAppiontData" label-width="100px">
+        <el-card shadow="never">
+          <el-form-item label="销售员" prop="user">
+            <el-select v-model="formAppiontData.salerId">
+              <el-option
+                v-for="(saler, index) in salerList"
+                :key="index"
+                :label="saler.username"
+                :value="saler.id"
+              />
+            </el-select>
+          </el-form-item>
+        </el-card>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="handleSubmitAppiontClick">确 定</el-button>
+          <el-button @click="handleCloseAppiontDialog">取 消</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -130,10 +170,13 @@ import ClientAPI, { ClientPageQuery, ClientPageVO, ClientForm } from "@/api/crm/
 import { RequestQueryBuilder } from "@nestjsx/crud-request";
 import { useDictStore } from "@/store/modules/dict.store";
 import { mapKeys } from "lodash-es";
+import UserApi from "@/api/system/user.api";
 
 const queryFormRef = ref();
 const dataFormRef = ref();
+const dataAppiontFormRef = ref();
 const clientTypeMap = ref();
+const salerList = ref();
 
 const loading = ref(false);
 const ids = ref<number[]>([]);
@@ -153,6 +196,12 @@ const columns = reactive([
   { label: "邮箱", prop: "email", minWidth: 100 },
   { label: "qq", prop: "qq", minWidth: 100 },
   { label: "创建时间", prop: "createdAt", minWidth: 120 },
+  {
+    label: "归属销售员",
+    prop: "saler",
+    minWidth: 100,
+    formatter: (saler) => saler?.username || "-",
+  },
   { label: "操作", minWidth: 150, slot: "operation", fixed: "right" },
 ]);
 
@@ -162,8 +211,13 @@ const dialog = reactive({
   title: "",
   visible: false,
 });
+const appiontDialog = reactive({
+  title: "",
+  visible: false,
+});
 
 const formData = reactive<ClientForm>({});
+const formAppiontData = reactive<ClientForm>({});
 
 const computedRules = computed(() => {
   const rules: Partial<Record<string, any>> = {
@@ -177,7 +231,18 @@ const computedRules = computed(() => {
 function handleQuery() {
   loading.value = true;
   const queryString = RequestQueryBuilder.create({
-    fields: ["id", "clientName", "username", "clientType", "phone", "qq", "email", "createdAt"],
+    fields: [
+      "id",
+      "clientName",
+      "username",
+      "clientType",
+      "phone",
+      "qq",
+      "email",
+      "createdAt",
+      "salerId",
+      "saler",
+    ],
     search: {
       $and: [
         {
@@ -190,6 +255,7 @@ function handleQuery() {
         { clientType: queryParams.clientType },
       ],
     },
+    join: [{ field: "saler" }],
     page: queryParams.page,
     limit: queryParams.limit,
     resetCache: true,
@@ -219,9 +285,42 @@ function handleAddClick() {
 }
 
 /**
+ * 客户分配/取消分配给销售员
+ *
+ * @param row
+ */
+function handleAppointClick(row) {
+  // 取消分配销售员
+  if (row.salerId) {
+    ElMessageBox.confirm(`确认取消分配给${row.saler.username}?`, "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    }).then(
+      () => {
+        loading.value = true;
+        ClientAPI.updateOne(row.id, { saler: null })
+          .then(() => {
+            ElMessage.success("取消成功");
+            handleResetQuery();
+          })
+          .finally(() => (loading.value = false));
+      },
+      () => {
+        ElMessage.info("未取消分配");
+      }
+    );
+  } else {
+    // 分配销售员
+    appiontDialog.visible = true;
+    formAppiontData.id = row.id;
+  }
+}
+
+/**
  * 编辑客户
  *
- * @param id 字典ID
+ * @param id 客户ID
  */
 function handleEditClick(id: number) {
   dialog.visible = true;
@@ -231,7 +330,19 @@ function handleEditClick(id: number) {
   });
 }
 
-// 提交字典表单
+// 提交分配
+function handleSubmitAppiontClick() {
+  loading.value = true;
+  ClientAPI.updateOne(formAppiontData.id, formAppiontData)
+    .then(() => {
+      ElMessage.success("分配成功");
+      handleCloseAppiontDialog();
+      handleQuery();
+    })
+    .finally(() => (loading.value = false));
+}
+
+// 提交表单
 function handleSubmitClick() {
   dataFormRef.value.validate((isValid: boolean) => {
     if (isValid) {
@@ -258,7 +369,17 @@ function handleSubmitClick() {
   });
 }
 
-// 关闭字典弹窗
+// 关闭客户分配弹窗
+function handleCloseAppiontDialog() {
+  appiontDialog.visible = false;
+
+  dataAppiontFormRef.value.resetFields();
+  dataAppiontFormRef.value.clearValidate();
+
+  formAppiontData.id = undefined;
+}
+
+// 关闭客户弹窗
 function handleCloseDialog() {
   dialog.visible = false;
 
@@ -268,9 +389,9 @@ function handleCloseDialog() {
   formData.id = undefined;
 }
 /**
- * 删除字典
+ * 删除客户
  *
- * @param id 字典ID
+ * @param id 客户ID
  */
 function handleDelete(id?: number) {
   if (!id) {
@@ -298,6 +419,8 @@ function handleDelete(id?: number) {
 async function loadDictItems() {
   const clientTypeDictItems = await useDictStore().getDictItems("CLIENT_TYPE");
   clientTypeMap.value = mapKeys(clientTypeDictItems, "value");
+
+  salerList.value = await UserApi.getSalers();
 }
 
 onMounted(async () => {

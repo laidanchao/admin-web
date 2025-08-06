@@ -84,6 +84,13 @@ class UserAPI extends BaseApi {
       data: data,
     });
   }
+
+  getSalers() {
+    return request<any, string>({
+      url: `${USER_BASE_URL}/getSalers`,
+      method: "get",
+    });
+  }
 }
 
 export default new UserAPI();

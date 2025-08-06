@@ -1,4 +1,4 @@
-<!-- 字典 -->
+<!-- 客户 -->
 <template>
   <div class="app-container">
     <div class="search-bar">
@@ -6,10 +6,13 @@
         <el-form-item label="关键字" prop="keywords">
           <el-input
             v-model="queryParams.keywords"
-            placeholder="字典名称/编码"
+            placeholder="客户名/用户名/手机号"
             clearable
             @keyup.enter="handleQuery"
           />
+        </el-form-item>
+        <el-form-item label="客户类型" prop="clientType">
+          <Dict v-model="queryParams.clientType" code="CLIENT_TYPE" style="width: 150px" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
@@ -32,13 +35,12 @@
         :total="total"
         :query-params="queryParams"
         :loading="loading"
-        show-selection
         @pagination="handleQuery"
         @page-change="handleQuery"
       >
-        <template #status-column="{ row }">
-          <el-tag :type="row.isActive ? 'success' : 'info'">
-            {{ row.isActive ? "启用" : "禁用" }}
+        <template #client-type-column="{ row }">
+          <el-tag :type="clientTypeMap[row.clientType].tagType">
+            {{ clientTypeMap[row.clientType].label }}
           </el-tag>
         </template>
         <!-- 操作列插槽 -->
@@ -65,36 +67,43 @@
       </BaseTable>
     </el-card>
 
-    <!--字典弹窗-->
+    <!--客户信息弹窗-->
     <el-dialog
       v-model="dialog.visible"
       :title="dialog.title"
-      width="500px"
+      width="450px"
       @close="handleCloseDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="computedRules" label-width="100px">
         <el-card shadow="never">
-          <el-form-item label="字典名称" prop="name">
-            <el-input v-model="formData.name" placeholder="请输入字典名称" />
+          <el-form-item label="客户名" prop="clientName">
+            <el-input v-model="formData.clientName" placeholder="请输入客户名" />
           </el-form-item>
-
-          <el-form-item label="字典编码" prop="code">
+          <el-form-item label="客户类型" prop="clientType">
+            <Dict v-model="formData.clientType" code="CLIENT_TYPE" :clearable="false" />
+          </el-form-item>
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="formData.username" placeholder="请输入用户名" />
+          </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="formData.password" placeholder="请输入密码" />
+          </el-form-item>
+          <el-form-item label="手机号" prop="phone">
+            <el-input v-model="formData.phone" placeholder="请输入手机号" />
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input v-model="formData.email" placeholder="请输入邮箱" />
+          </el-form-item>
+          <el-form-item label="qq" prop="qq">
+            <el-input v-model="formData.qq" placeholder="请输入qq" />
+          </el-form-item>
+          <el-form-item label="地址" prop="address">
             <el-input
-              v-model="formData.code"
-              :disabled="!!formData.id"
-              placeholder="请输入字典编码"
+              v-model="formData.address"
+              :rows="2"
+              type="textarea"
+              placeholder="请输入地址"
             />
-          </el-form-item>
-
-          <el-form-item label="状态">
-            <el-radio-group v-model="formData.isActive">
-              <el-radio :value="true">启用</el-radio>
-              <el-radio :value="false">禁用</el-radio>
-            </el-radio-group>
-          </el-form-item>
-
-          <el-form-item label="备注" prop="description">
-            <el-input v-model="formData.description" type="textarea" placeholder="请输入备注" />
           </el-form-item>
         </el-card>
       </el-form>
@@ -116,44 +125,53 @@ defineOptions({
   inherititems: false,
 });
 
-import DictAPI, { DictPageQuery, DictPageVO, DictForm } from "@/api/system/dict.api";
+import ClientAPI, { ClientPageQuery, ClientPageVO, ClientForm } from "@/api/crm/client.api";
 
 import { RequestQueryBuilder } from "@nestjsx/crud-request";
+import { useDictStore } from "@/store/modules/dict.store";
+import { mapKeys } from "lodash-es";
+import { useUserStore } from "@/store/modules/user.store";
 
 const queryFormRef = ref();
 const dataFormRef = ref();
+const clientTypeMap = ref();
+
+const userStore = useUserStore();
 
 const loading = ref(false);
 const ids = ref<number[]>([]);
 const total = ref(0);
 
-const queryParams = reactive<DictPageQuery>({
+const queryParams = reactive<ClientPageQuery>({
   page: 1,
   limit: 10,
 });
 
 // 表格列配置
 const columns = reactive([
-  { label: "字典名称", prop: "name", minWidth: 100 },
-  { label: "字典编码", prop: "code", minWidth: 100 },
-  { label: "备注", prop: "description", minWidth: 150 },
-  { label: "状态", prop: "isActive", minWidth: 80, slot: "status-column" },
+  { label: "客户名", prop: "clientName", minWidth: 100 },
+  { label: "用户名", prop: "username", minWidth: 100 },
+  { label: "客户类型", prop: "clientType", minWidth: 100, slot: "client-type-column" },
+  { label: "手机号", prop: "phone", minWidth: 100 },
+  { label: "邮箱", prop: "email", minWidth: 100 },
+  { label: "qq", prop: "qq", minWidth: 100 },
+  { label: "创建时间", prop: "createdAt", minWidth: 120 },
   { label: "操作", minWidth: 150, slot: "operation", fixed: "right" },
 ]);
 
-const tableData = ref<DictPageVO[]>();
+const tableData = ref<ClientPageVO[]>();
 
 const dialog = reactive({
   title: "",
   visible: false,
 });
 
-const formData = reactive<DictForm>({ isActive: true });
+const formData = reactive<ClientForm>({});
 
 const computedRules = computed(() => {
   const rules: Partial<Record<string, any>> = {
-    name: [{ required: true, message: "请输入字典名称", trigger: "blur" }],
-    code: [{ required: true, message: "请输入字典编码", trigger: "blur" }],
+    clientName: [{ required: true, message: "请输入客户名", trigger: "blur" }],
+    clientType: [{ required: true, message: "请选择客户类型", trigger: "blur" }],
   };
   return rules;
 });
@@ -162,16 +180,28 @@ const computedRules = computed(() => {
 function handleQuery() {
   loading.value = true;
   const queryString = RequestQueryBuilder.create({
-    fields: ["id", "code", "name", "description", "isActive", "createdAt"],
+    fields: [
+      "id",
+      "clientName",
+      "username",
+      "clientType",
+      "phone",
+      "qq",
+      "email",
+      "createdAt",
+      "salerId",
+    ],
     search: {
       $and: [
         {
           $or: [
-            { code: { $cont: queryParams.keywords } },
-            { name: { $cont: queryParams.keywords } },
+            { clientName: { $cont: queryParams.keywords } },
+            { phone: { $cont: queryParams.keywords } },
+            { username: { $cont: queryParams.keywords } },
           ],
         },
-        { isActive: queryParams.isActive },
+        { clientType: queryParams.clientType },
+        { salerId: userStore.userInfo.id },
       ],
     },
     page: queryParams.page,
@@ -179,7 +209,7 @@ function handleQuery() {
     resetCache: true,
   }).query();
 
-  DictAPI.getPageList<DictPageVO>(queryString)
+  ClientAPI.getPageList<ClientPageVO>(queryString)
     .then((data) => {
       tableData.value = data.data;
       total.value = data.total;
@@ -196,33 +226,33 @@ function handleResetQuery() {
   handleQuery();
 }
 
-// 新增字典
+// 新增客户
 function handleAddClick() {
   dialog.visible = true;
-  dialog.title = "新增字典";
+  dialog.title = "新增客户";
 }
 
 /**
- * 编辑字典
+ * 编辑客户
  *
- * @param id 字典ID
+ * @param id 客户ID
  */
 function handleEditClick(id: number) {
   dialog.visible = true;
-  dialog.title = "修改字典";
-  DictAPI.getOne(id).then((data) => {
+  dialog.title = "修改客户";
+  ClientAPI.getOne(id).then((data) => {
     Object.assign(formData, data);
   });
 }
 
-// 提交字典表单
+// 提交客户表单
 function handleSubmitClick() {
   dataFormRef.value.validate((isValid: boolean) => {
     if (isValid) {
       loading.value = true;
       const id = formData.id;
       if (id) {
-        DictAPI.updateOne(id, formData)
+        ClientAPI.updateOne(id, formData)
           .then(() => {
             ElMessage.success("修改成功");
             handleCloseDialog();
@@ -230,7 +260,7 @@ function handleSubmitClick() {
           })
           .finally(() => (loading.value = false));
       } else {
-        DictAPI.createOne(formData)
+        ClientAPI.createOne(formData)
           .then(() => {
             ElMessage.success("新增成功");
             handleCloseDialog();
@@ -242,7 +272,7 @@ function handleSubmitClick() {
   });
 }
 
-// 关闭字典弹窗
+// 关闭客户弹窗
 function handleCloseDialog() {
   dialog.visible = false;
 
@@ -252,9 +282,9 @@ function handleCloseDialog() {
   formData.id = undefined;
 }
 /**
- * 删除字典
+ * 删除客户
  *
- * @param id 字典ID
+ * @param id 客户ID
  */
 function handleDelete(id?: number) {
   if (!id) {
@@ -268,7 +298,7 @@ function handleDelete(id?: number) {
     type: "warning",
   }).then(
     () => {
-      DictAPI.deleteOne(id).then(() => {
+      ClientAPI.deleteOne(id).then(() => {
         ElMessage.success("删除成功");
         handleResetQuery();
       });
@@ -279,7 +309,13 @@ function handleDelete(id?: number) {
   );
 }
 
-onMounted(() => {
-  handleQuery();
+async function loadDictItems() {
+  const clientTypeDictItems = await useDictStore().getDictItems("CLIENT_TYPE");
+  clientTypeMap.value = mapKeys(clientTypeDictItems, "value");
+}
+
+onMounted(async () => {
+  await loadDictItems();
+  await handleQuery();
 });
 </script>
