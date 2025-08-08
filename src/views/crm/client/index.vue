@@ -11,8 +11,8 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="客户类型" prop="clientType">
-          <Dict v-model="queryParams.clientType" code="CLIENT_TYPE" style="width: 150px" />
+        <el-form-item label="客户分级" prop="clientStage">
+          <Dict v-model="queryParams.clientStage" code="CLIENT_STAGE" style="width: 150px" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
@@ -24,9 +24,6 @@
     <el-card shadow="never">
       <div class="mb-[10px]">
         <el-button type="success" icon="plus" @click="handleAddClick()">新增</el-button>
-        <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
-          删除
-        </el-button>
       </div>
 
       <BaseTable
@@ -38,9 +35,9 @@
         @pagination="handleQuery"
         @page-change="handleQuery"
       >
-        <template #client-type-column="{ row }">
-          <el-tag :type="clientTypeMap[row.clientType].tagType">
-            {{ clientTypeMap[row.clientType].label }}
+        <template #client-stage-column="{ row }">
+          <el-tag :type="clientStageMap[row.clientStage].tagType">
+            {{ clientStageMap[row.clientStage].label }}
           </el-tag>
         </template>
         <!-- 操作列插槽 -->
@@ -78,53 +75,7 @@
     </el-card>
 
     <!--客户信息弹窗-->
-    <el-dialog
-      v-model="dialog.visible"
-      :title="dialog.title"
-      width="450px"
-      @close="handleCloseDialog"
-    >
-      <el-form ref="dataFormRef" :model="formData" :rules="computedRules" label-width="100px">
-        <el-card shadow="never">
-          <el-form-item label="客户名" prop="clientName">
-            <el-input v-model="formData.clientName" placeholder="请输入客户名" />
-          </el-form-item>
-          <el-form-item label="客户类型" prop="clientType">
-            <Dict v-model="formData.clientType" code="CLIENT_TYPE" :clearable="false" />
-          </el-form-item>
-          <el-form-item label="用户名" prop="username">
-            <el-input v-model="formData.username" placeholder="请输入用户名" />
-          </el-form-item>
-          <el-form-item label="密码" prop="password">
-            <el-input v-model="formData.password" placeholder="请输入密码" />
-          </el-form-item>
-          <el-form-item label="手机号" prop="phone">
-            <el-input v-model="formData.phone" placeholder="请输入手机号" />
-          </el-form-item>
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="formData.email" placeholder="请输入邮箱" />
-          </el-form-item>
-          <el-form-item label="qq" prop="qq">
-            <el-input v-model="formData.qq" placeholder="请输入qq" />
-          </el-form-item>
-          <el-form-item label="地址" prop="address">
-            <el-input
-              v-model="formData.address"
-              :rows="2"
-              type="textarea"
-              placeholder="请输入地址"
-            />
-          </el-form-item>
-        </el-card>
-      </el-form>
-
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmitClick">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
-        </div>
-      </template>
-    </el-dialog>
+    <ClientDialog ref="clientDialogRef" @refresh="handleQuery"></ClientDialog>
 
     <!-- 客户分配弹窗 -->
     <el-dialog
@@ -168,18 +119,19 @@ defineOptions({
 import ClientAPI, { ClientPageQuery, ClientPageVO, ClientForm } from "@/api/crm/client.api";
 
 import { RequestQueryBuilder } from "@nestjsx/crud-request";
-import { useDictStore } from "@/store/modules/dict.store";
 import { mapKeys } from "lodash-es";
 import UserApi from "@/api/system/user.api";
+import { useDictStore } from "@/store";
+import ClientDialog from "@/views/crm/client-dialog.vue";
 
 const queryFormRef = ref();
-const dataFormRef = ref();
 const dataAppiontFormRef = ref();
 const clientTypeMap = ref();
+const clientStageMap = ref();
 const salerList = ref();
+const clientDialogRef = ref();
 
 const loading = ref(false);
-const ids = ref<number[]>([]);
 const total = ref(0);
 
 const queryParams = reactive<ClientPageQuery>({
@@ -191,7 +143,7 @@ const queryParams = reactive<ClientPageQuery>({
 const columns = reactive([
   { label: "客户名", prop: "clientName", minWidth: 100 },
   { label: "用户名", prop: "username", minWidth: 100 },
-  { label: "客户类型", prop: "clientType", minWidth: 100, slot: "client-type-column" },
+  { label: "客户分级", prop: "clientStage", minWidth: 100, slot: "client-stage-column" },
   { label: "手机号", prop: "phone", minWidth: 100 },
   { label: "邮箱", prop: "email", minWidth: 100 },
   { label: "qq", prop: "qq", minWidth: 100 },
@@ -207,25 +159,12 @@ const columns = reactive([
 
 const tableData = ref<ClientPageVO[]>();
 
-const dialog = reactive({
-  title: "",
-  visible: false,
-});
 const appiontDialog = reactive({
   title: "",
   visible: false,
 });
 
-const formData = reactive<ClientForm>({});
 const formAppiontData = reactive<ClientForm>({});
-
-const computedRules = computed(() => {
-  const rules: Partial<Record<string, any>> = {
-    clientName: [{ required: true, message: "请输入客户名", trigger: "blur" }],
-    clientType: [{ required: true, message: "请选择客户类型", trigger: "blur" }],
-  };
-  return rules;
-});
 
 // 查询
 function handleQuery() {
@@ -235,6 +174,7 @@ function handleQuery() {
       "id",
       "clientName",
       "username",
+      "clientStage",
       "clientType",
       "phone",
       "qq",
@@ -252,7 +192,7 @@ function handleQuery() {
             { username: { $cont: queryParams.keywords } },
           ],
         },
-        { clientType: queryParams.clientType },
+        { clientStage: queryParams.clientStage },
       ],
     },
     join: [{ field: "saler" }],
@@ -276,12 +216,6 @@ function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.page = 1;
   handleQuery();
-}
-
-// 新增客户
-function handleAddClick() {
-  dialog.visible = true;
-  dialog.title = "新增客户";
 }
 
 /**
@@ -317,16 +251,19 @@ function handleAppointClick(row) {
   }
 }
 
+// 新增客户
+function handleAddClick() {
+  clientDialogRef.value.open();
+}
+
 /**
  * 编辑客户
  *
  * @param id 客户ID
  */
 function handleEditClick(id: number) {
-  dialog.visible = true;
-  dialog.title = "修改客户";
   ClientAPI.getOne(id).then((data) => {
-    Object.assign(formData, data);
+    clientDialogRef.value.open(data);
   });
 }
 
@@ -342,33 +279,6 @@ function handleSubmitAppiontClick() {
     .finally(() => (loading.value = false));
 }
 
-// 提交表单
-function handleSubmitClick() {
-  dataFormRef.value.validate((isValid: boolean) => {
-    if (isValid) {
-      loading.value = true;
-      const id = formData.id;
-      if (id) {
-        ClientAPI.updateOne(id, formData)
-          .then(() => {
-            ElMessage.success("修改成功");
-            handleCloseDialog();
-            handleQuery();
-          })
-          .finally(() => (loading.value = false));
-      } else {
-        ClientAPI.createOne(formData)
-          .then(() => {
-            ElMessage.success("新增成功");
-            handleCloseDialog();
-            handleQuery();
-          })
-          .finally(() => (loading.value = false));
-      }
-    }
-  });
-}
-
 // 关闭客户分配弹窗
 function handleCloseAppiontDialog() {
   appiontDialog.visible = false;
@@ -379,15 +289,6 @@ function handleCloseAppiontDialog() {
   formAppiontData.id = undefined;
 }
 
-// 关闭客户弹窗
-function handleCloseDialog() {
-  dialog.visible = false;
-
-  dataFormRef.value.resetFields();
-  dataFormRef.value.clearValidate();
-
-  formData.id = undefined;
-}
 /**
  * 删除客户
  *
@@ -417,9 +318,11 @@ function handleDelete(id?: number) {
 }
 
 async function loadDictItems() {
+  const clientStageDictItems = await useDictStore().getDictItems("CLIENT_STAGE");
+  clientStageMap.value = mapKeys(clientStageDictItems, "value");
+
   const clientTypeDictItems = await useDictStore().getDictItems("CLIENT_TYPE");
   clientTypeMap.value = mapKeys(clientTypeDictItems, "value");
-
   salerList.value = await UserApi.getSalers();
 }
 

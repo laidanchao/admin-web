@@ -1,4 +1,4 @@
-import { CLIENT_TYPE_ENUM } from "@/enums/crm/client.enum";
+import { CLIENT_STAGE, CLIENT_TYPE_ENUM } from "@/enums/crm/client.enum";
 import BaseApi from "../base.api";
 import { UserInfo } from "../system/user.api";
 
@@ -22,6 +22,8 @@ export interface ClientPageQuery extends PageQuery {
   keywords?: string;
 
   clientType?: CLIENT_TYPE_ENUM;
+
+  clientStage?: CLIENT_STAGE;
 }
 
 /**
@@ -45,6 +47,10 @@ export interface ClientPageVO {
    * 客户类型
    */
   clientType: CLIENT_TYPE_ENUM;
+  /**
+   * 客户分级
+   */
+  clientStage: CLIENT_STAGE;
   /**
    * 客户电话
    */
@@ -86,6 +92,10 @@ export interface ClientForm {
    * 客户类型
    */
   clientType?: CLIENT_TYPE_ENUM;
+  /**
+   * 客户分级
+   */
+  clientStage?: CLIENT_STAGE;
   /**
    * 客户电话
    */

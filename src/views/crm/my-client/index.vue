@@ -67,54 +67,7 @@
       </BaseTable>
     </el-card>
 
-    <!--客户信息弹窗-->
-    <el-dialog
-      v-model="dialog.visible"
-      :title="dialog.title"
-      width="450px"
-      @close="handleCloseDialog"
-    >
-      <el-form ref="dataFormRef" :model="formData" :rules="computedRules" label-width="100px">
-        <el-card shadow="never">
-          <el-form-item label="客户名" prop="clientName">
-            <el-input v-model="formData.clientName" placeholder="请输入客户名" />
-          </el-form-item>
-          <el-form-item label="客户类型" prop="clientType">
-            <Dict v-model="formData.clientType" code="CLIENT_TYPE" :clearable="false" />
-          </el-form-item>
-          <el-form-item label="用户名" prop="username">
-            <el-input v-model="formData.username" placeholder="请输入用户名" />
-          </el-form-item>
-          <el-form-item label="密码" prop="password">
-            <el-input v-model="formData.password" placeholder="请输入密码" />
-          </el-form-item>
-          <el-form-item label="手机号" prop="phone">
-            <el-input v-model="formData.phone" placeholder="请输入手机号" />
-          </el-form-item>
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="formData.email" placeholder="请输入邮箱" />
-          </el-form-item>
-          <el-form-item label="qq" prop="qq">
-            <el-input v-model="formData.qq" placeholder="请输入qq" />
-          </el-form-item>
-          <el-form-item label="地址" prop="address">
-            <el-input
-              v-model="formData.address"
-              :rows="2"
-              type="textarea"
-              placeholder="请输入地址"
-            />
-          </el-form-item>
-        </el-card>
-      </el-form>
-
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmitClick">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
-        </div>
-      </template>
-    </el-dialog>
+    <ClientDialog ref="clientDialogRef" @refresh="handleQuery"></ClientDialog>
   </div>
 </template>
 
@@ -125,18 +78,16 @@ defineOptions({
   inherititems: false,
 });
 
-import ClientAPI, { ClientPageQuery, ClientPageVO, ClientForm } from "@/api/crm/client.api";
+import ClientAPI, { ClientPageQuery, ClientPageVO } from "@/api/crm/client.api";
 
 import { RequestQueryBuilder } from "@nestjsx/crud-request";
 import { useDictStore } from "@/store/modules/dict.store";
 import { mapKeys } from "lodash-es";
-import { useUserStore } from "@/store/modules/user.store";
+import ClientDialog from "@/views/crm/client-dialog.vue";
 
 const queryFormRef = ref();
-const dataFormRef = ref();
+const clientDialogRef = ref();
 const clientTypeMap = ref();
-
-const userStore = useUserStore();
 
 const loading = ref(false);
 const ids = ref<number[]>([]);
@@ -161,21 +112,6 @@ const columns = reactive([
 
 const tableData = ref<ClientPageVO[]>();
 
-const dialog = reactive({
-  title: "",
-  visible: false,
-});
-
-const formData = reactive<ClientForm>({});
-
-const computedRules = computed(() => {
-  const rules: Partial<Record<string, any>> = {
-    clientName: [{ required: true, message: "请输入客户名", trigger: "blur" }],
-    clientType: [{ required: true, message: "请选择客户类型", trigger: "blur" }],
-  };
-  return rules;
-});
-
 // 查询
 function handleQuery() {
   loading.value = true;
@@ -184,6 +120,7 @@ function handleQuery() {
       "id",
       "clientName",
       "username",
+      "clientStage",
       "clientType",
       "phone",
       "qq",
@@ -200,8 +137,7 @@ function handleQuery() {
             { username: { $cont: queryParams.keywords } },
           ],
         },
-        { clientType: queryParams.clientType },
-        { salerId: userStore.userInfo.id },
+        { clientStage: queryParams.clientStage },
       ],
     },
     page: queryParams.page,
@@ -228,8 +164,7 @@ function handleResetQuery() {
 
 // 新增客户
 function handleAddClick() {
-  dialog.visible = true;
-  dialog.title = "新增客户";
+  clientDialogRef.value.open();
 }
 
 /**
@@ -238,49 +173,11 @@ function handleAddClick() {
  * @param id 客户ID
  */
 function handleEditClick(id: number) {
-  dialog.visible = true;
-  dialog.title = "修改客户";
   ClientAPI.getOne(id).then((data) => {
-    Object.assign(formData, data);
+    clientDialogRef.value.open(data);
   });
 }
 
-// 提交客户表单
-function handleSubmitClick() {
-  dataFormRef.value.validate((isValid: boolean) => {
-    if (isValid) {
-      loading.value = true;
-      const id = formData.id;
-      if (id) {
-        ClientAPI.updateOne(id, formData)
-          .then(() => {
-            ElMessage.success("修改成功");
-            handleCloseDialog();
-            handleQuery();
-          })
-          .finally(() => (loading.value = false));
-      } else {
-        ClientAPI.createOne(formData)
-          .then(() => {
-            ElMessage.success("新增成功");
-            handleCloseDialog();
-            handleQuery();
-          })
-          .finally(() => (loading.value = false));
-      }
-    }
-  });
-}
-
-// 关闭客户弹窗
-function handleCloseDialog() {
-  dialog.visible = false;
-
-  dataFormRef.value.resetFields();
-  dataFormRef.value.clearValidate();
-
-  formData.id = undefined;
-}
 /**
  * 删除客户
  *
