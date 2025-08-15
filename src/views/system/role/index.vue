@@ -190,6 +190,7 @@ const total = ref(0);
 const columns = reactive([
   { label: "角色名称", prop: "name", minWidth: 100 },
   { label: "角色编码", prop: "code", minWidth: 150 },
+  { label: "操作", minWidth: 150, slot: "operation", fixed: "right" },
 ]);
 
 const queryParams = reactive<RolePageQuery>({

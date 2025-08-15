@@ -1,11 +1,26 @@
-import { CLIENT_TYPE_ENUM } from "@/enums/crm/client.enum";
+import { CLIENT_STAGE, CLIENT_TYPE_ENUM } from "@/enums/crm/client.enum";
 import BaseApi from "../base.api";
+import { UserInfo } from "../system/user.api";
+import request from "@/utils/request";
 
 const CLIENT_BASE_URL = "/api/crm/client";
 
 class ClientAPI extends BaseApi {
   constructor() {
     super(CLIENT_BASE_URL);
+  }
+
+  import(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return request<any, any>({
+      url: `${CLIENT_BASE_URL}/import`,
+      method: "post",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   }
 }
 
@@ -21,6 +36,8 @@ export interface ClientPageQuery extends PageQuery {
   keywords?: string;
 
   clientType?: CLIENT_TYPE_ENUM;
+
+  clientStage?: CLIENT_STAGE;
 }
 
 /**
@@ -45,6 +62,10 @@ export interface ClientPageVO {
    */
   clientType: CLIENT_TYPE_ENUM;
   /**
+   * 客户分级
+   */
+  clientStage: CLIENT_STAGE;
+  /**
    * 客户电话
    */
   phone: string;
@@ -54,6 +75,14 @@ export interface ClientPageVO {
    * 客户地址
    */
   address: string;
+  /**
+   * 销售员
+   */
+  saler?: UserInfo;
+  /**
+   * 销售员id
+   */
+  salerId?: number;
 }
 
 /**
@@ -78,6 +107,10 @@ export interface ClientForm {
    */
   clientType?: CLIENT_TYPE_ENUM;
   /**
+   * 客户分级
+   */
+  clientStage?: CLIENT_STAGE;
+  /**
    * 客户电话
    */
   phone?: string;
@@ -87,4 +120,6 @@ export interface ClientForm {
    * 客户地址
    */
   address?: string;
+  /** 销售员id */
+  salerId?: number;
 }

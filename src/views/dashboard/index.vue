@@ -2,7 +2,7 @@
   <div class="p-5">
     <el-card shadow="never">
       <el-row justify="space-between">
-        <el-col :span="18" :xs="24">
+        <el-col :span="24" :xs="24">
           <div class="flex h-full items-center">
             <img
               class="w-20 h-20 mr-5 rounded-full"
@@ -15,7 +15,7 @@
           </div>
         </el-col>
 
-        <el-col :span="6" :xs="24">
+        <!-- <el-col :span="6" :xs="24">
           <el-row class="h-80px flex-y-center" :gutter="10">
             <el-col :span="10">
               <div class="font-bold color-#ff9a2e text-sm flex-y-center">
@@ -72,11 +72,11 @@
               </div>
             </el-col>
           </el-row>
-        </el-col>
+        </el-col> -->
       </el-row>
     </el-card>
 
-    <el-row class="mt-3">
+    <!-- <el-row class="mt-3">
       <el-col>
         <el-card>
           <el-descriptions :column="1" border>
@@ -236,7 +236,7 @@
           </el-descriptions>
         </el-card>
       </el-col>
-    </el-row>
+    </el-row> -->
   </div>
 </template>
 

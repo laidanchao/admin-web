@@ -19,6 +19,13 @@ class FileAPI {
       },
     });
   }
+
+  getClientTemplate() {
+    return request<any, string>({
+      url: `${FILE_BASE_URL}/getClientTemplate`,
+      method: "get",
+    });
+  }
 }
 
 export default new FileAPI();

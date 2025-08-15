@@ -20,7 +20,7 @@
               ref="uploadRef"
               v-model:file-list="importFormData.files"
               class="w-full"
-              accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+              accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/csv"
               :drag="true"
               :limit="1"
               :auto-upload="false"
@@ -33,7 +33,7 @@
               </div>
               <template #tip>
                 <div class="el-upload__tip">
-                  格式为*.xlsx / *.xls，文件不超过一个
+                  格式为*.xlsx / *.xls / *.csv，文件不超过一个
                   <el-link
                     type="primary"
                     icon="download"
@@ -67,7 +67,7 @@
 
     <el-dialog v-model="resultVisible" title="导入结果" width="600px">
       <el-alert
-        :title="`导入结果：${invalidCount}条无效数据，${validCount}条有效数据`"
+        :title="`导入结果：${invalidCount}条失败，${validCount}条成功`"
         type="warning"
         :closable="false"
       />
@@ -90,8 +90,8 @@
 
 <script lang="ts" setup>
 import { ElMessage, type UploadUserFile } from "element-plus";
-import UserAPI from "@/api/system/user.api";
-import { ResultCode } from "@/enums/common/result.enum";
+import ClientAPI from "@/api/crm/client.api";
+import FileAPI from "@/api/file.api";
 
 const emit = defineEmits(["import-success"]);
 const visible = defineModel("modelValue", {
@@ -134,19 +134,10 @@ const handleFileExceed = () => {
 
 // 下载导入模板
 const handleDownloadTemplate = () => {
-  UserAPI.downloadTemplate().then((response: any) => {
-    const fileData = response.data;
-    const fileName = decodeURI(response.headers["content-disposition"].split(";")[1].split("=")[1]);
-    const fileType =
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-
-    const blob = new Blob([fileData], { type: fileType });
-    const downloadUrl = window.URL.createObjectURL(blob);
-
+  FileAPI.getClientTemplate().then((response: string) => {
+    const downloadUrl = response;
     const downloadLink = document.createElement("a");
     downloadLink.href = downloadUrl;
-    downloadLink.download = fileName;
-
     document.body.appendChild(downloadLink);
     downloadLink.click();
 
@@ -162,22 +153,17 @@ const handleUpload = async () => {
     return;
   }
 
-  try {
-    const result = await UserAPI.import(importFormData.files[0].raw as File);
-    if (result.code === ResultCode.SUCCESS && result.invalidCount === 0) {
-      ElMessage.success("导入成功，导入数据：" + result.validCount + "条");
-      emit("import-success");
-      handleClose();
-    } else {
-      ElMessage.error("上传失败");
-      resultVisible.value = true;
-      resultData.value = result.messageList;
-      invalidCount.value = result.invalidCount;
-      validCount.value = result.validCount;
-    }
-  } catch (error: any) {
-    console.error(error);
-    ElMessage.error("上传失败：" + error);
+  const result = await ClientAPI.import(importFormData.files[0].raw as File);
+  if (result.errorCount === 0) {
+    ElMessage.success("导入成功，导入数据：" + result.successCount + "条");
+    emit("import-success");
+    handleClose();
+  } else {
+    ElMessage.error("上传失败");
+    resultVisible.value = true;
+    resultData.value = result.errorMessageArray;
+    invalidCount.value = result.errorCount;
+    validCount.value = result.successCount;
   }
 };
 

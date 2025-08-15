@@ -11,7 +11,7 @@ const defaultSettings: AppSettings = {
   // 系统版本
   version: pkg.version,
   // 是否显示设置
-  showSettings: true,
+  showSettings: false,
   // 是否显示标签视图
   tagsView: true,
   // 是否显示侧边栏Logo
