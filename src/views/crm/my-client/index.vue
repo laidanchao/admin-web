@@ -69,6 +69,7 @@
 
     <ClientDialog ref="clientDialogRef" @refresh="handleQuery"></ClientDialog>
   </div>
+  s
 </template>
 
 <script setup lang="ts">
@@ -83,7 +84,7 @@ import ClientAPI, { ClientPageQuery, ClientPageVO } from "@/api/crm/client.api";
 import { RequestQueryBuilder } from "@nestjsx/crud-request";
 import { useDictStore } from "@/store/modules/dict.store";
 import { mapKeys } from "lodash-es";
-import ClientDialog from "@/views/crm/client-dialog.vue";
+import ClientDialog from "@/views/crm/components/client-dialog.vue";
 
 const queryFormRef = ref();
 const clientDialogRef = ref();

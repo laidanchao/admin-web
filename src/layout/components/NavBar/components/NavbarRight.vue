@@ -3,10 +3,10 @@
     <!-- 桌面端显示 -->
     <template v-if="isDesktop">
       <!-- 全屏 -->
-      <Fullscreen />
+      <!-- <Fullscreen /> -->
 
       <!-- 布局大小 -->
-      <SizeSelect />
+      <!-- <SizeSelect /> -->
     </template>
 
     <!-- 用户头像（个人中心、注销登录等） -->
@@ -18,7 +18,9 @@
           :icon="UserFilled"
         ></el-avatar>
         <span class="user-profile__name">{{ userStore.userInfo.username }}</span>
+        <div class="i-svg:setting" style="margin-left: 5px" />
       </div>
+
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item @click="handleProfileClick">个人中心</el-dropdown-item>

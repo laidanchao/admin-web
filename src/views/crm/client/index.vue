@@ -24,6 +24,14 @@
     <el-card shadow="never">
       <div class="mb-[10px]">
         <el-button type="success" icon="plus" @click="handleAddClick()">新增</el-button>
+        <el-button
+          v-hasPerm="['crm:client:import']"
+          type="warning"
+          icon="Upload"
+          @click="handleImport()"
+        >
+          导入
+        </el-button>
       </div>
 
       <BaseTable
@@ -74,8 +82,10 @@
       </BaseTable>
     </el-card>
 
-    <!--客户信息弹窗-->
-    <ClientDialog ref="clientDialogRef" @refresh="handleQuery"></ClientDialog>
+    <!-- 客户信息弹窗 -->
+    <ClientDialog ref="clientDialogRef" @refresh="handleQuery" />
+    <!-- 客户导入弹窗 -->
+    <ClientImport v-model="importDialogVisible" @import-success="handleQuery()" />
 
     <!-- 客户分配弹窗 -->
     <el-dialog
@@ -122,7 +132,8 @@ import { RequestQueryBuilder } from "@nestjsx/crud-request";
 import { mapKeys } from "lodash-es";
 import UserApi from "@/api/system/user.api";
 import { useDictStore } from "@/store";
-import ClientDialog from "@/views/crm/client-dialog.vue";
+import ClientDialog from "@/views/crm/components/client-dialog.vue";
+import ClientImport from "@/views/crm/components/client-import.vue";
 
 const queryFormRef = ref();
 const dataAppiontFormRef = ref();
@@ -130,6 +141,7 @@ const clientTypeMap = ref();
 const clientStageMap = ref();
 const salerList = ref();
 const clientDialogRef = ref();
+const importDialogVisible = ref(false);
 
 const loading = ref(false);
 const total = ref(0);
@@ -315,6 +327,11 @@ function handleDelete(id?: number) {
       ElMessage.info("已取消删除");
     }
   );
+}
+
+// 打开导入弹窗
+function handleImport() {
+  importDialogVisible.value = true;
 }
 
 async function loadDictItems() {
