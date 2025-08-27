@@ -129,7 +129,7 @@ function handleUpload(options: UploadRequestOptions) {
       formData.append(key, props.data[key]);
     });
 
-    FileAPI.upload(formData)
+    FileAPI.uploadFile(formData)
       .then((data) => {
         resolve(data);
       })

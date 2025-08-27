@@ -19,7 +19,7 @@
       </el-button>
 
       <!-- 文件列表 -->
-      <template #file="{ file }">
+      <!-- <template #file="{ file }">
         <div class="el-upload-list__item-info">
           <a class="el-upload-list__item-name" @click="handleDownload(file)">
             <el-icon><Document /></el-icon>
@@ -29,7 +29,7 @@
             </span>
           </a>
         </div>
-      </template>
+      </template> -->
     </el-upload>
 
     <el-progress
@@ -44,7 +44,7 @@
 <script lang="ts" setup>
 import {
   UploadRawFile,
-  UploadUserFile,
+  // UploadUserFile,
   UploadFile,
   UploadProgressEvent,
   UploadRequestOptions,
@@ -168,7 +168,7 @@ function handleUpload(options: UploadRequestOptions) {
       formData.append(key, props.data[key]);
     });
 
-    FileAPI.upload(formData)
+    FileAPI.uploadFile(formData)
       .then((data) => {
         resolve(data);
       })
@@ -193,7 +193,10 @@ const handleProgress = (event: UploadProgressEvent) => {
 const handleSuccess = (fileInfo: FileInfo) => {
   ElMessage.success("上传成功");
 
-  modelValue.value = [...modelValue.value, { name: fileInfo.name, url: fileInfo.url } as FileInfo];
+  modelValue.value = [
+    ...modelValue.value,
+    { originalname: fileInfo.originalname, url: fileInfo.url } as FileInfo,
+  ];
 };
 
 /**
@@ -204,24 +207,24 @@ const handleError = (_error: any) => {
   ElMessage.error("上传失败");
 };
 
-/**
- * 删除文件
- */
-function handleRemove(fileUrl: string) {
-  FileAPI.delete(fileUrl).then(() => {
-    modelValue.value = modelValue.value.filter((file) => file.url !== fileUrl);
-  });
-}
+// /**
+//  * 删除文件
+//  */
+// function handleRemove(fileUrl: string) {
+//   FileAPI.delete(fileUrl).then(() => {
+//     modelValue.value = modelValue.value.filter((file) => file.url !== fileUrl);
+//   });
+// }
 
-/**
- * 下载文件
- */
-function handleDownload(file: UploadUserFile) {
-  const { url, name } = file;
-  if (url) {
-    FileAPI.download(url, name);
-  }
-}
+// /**
+//  * 下载文件
+//  */
+// function handleDownload(file: UploadUserFile) {
+//   const { url, name } = file;
+//   if (url) {
+//     FileAPI.download(url, name);
+//   }
+// }
 
 /** 获取一个不重复的id */
 function getUid(): number {
