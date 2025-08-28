@@ -13,5 +13,3 @@ dist-ssr
 *.sln
 
 stats.html
-
-deploy.sh
