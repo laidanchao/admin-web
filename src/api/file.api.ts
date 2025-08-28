@@ -20,6 +20,32 @@ class FileAPI {
     });
   }
 
+  /**
+   * 上传图片
+   *
+   * @param file
+   */
+  uploadImage(file: File, path: "editer" | "pay") {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("filePath", `images/${path}`);
+    return request<any, FileInfo>({
+      url: `${FILE_BASE_URL}/uploadImage`,
+      method: "post",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  }
+
+  /**
+   * 待完善
+   */
+  async uploadFile(formData) {
+    return formData;
+  }
+
   getClientTemplate() {
     return request<any, string>({
       url: `${FILE_BASE_URL}/getClientTemplate`,

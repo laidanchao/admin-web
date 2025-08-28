@@ -134,7 +134,7 @@ function filterAffixTags(routes: RouteRecordRaw[], basePath = "/") {
 }
 
 function initTags() {
-  const tags: TagView[] = filterAffixTags(permissionStore.routes);
+  const tags: TagView[] = filterAffixTags(permissionStore.routes as RouteRecordRaw[]);
   affixTags.value = tags;
   for (const tag of tags) {
     // Must have tag name
