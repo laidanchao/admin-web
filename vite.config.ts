@@ -45,11 +45,10 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       open: true,
       proxy: {
         // 代理 /dev-api 的请求
-        [env.VITE_APP_BASE_API]: {
+        ["/api"]: {
           changeOrigin: true,
-          // 代理目标地址：https://api.youlai.tech
+          // 代理目标地址：http://admin.ldc6.cn
           target: env.VITE_APP_API_URL,
-          rewrite: (path) => path.replace(new RegExp("^" + env.VITE_APP_BASE_API), ""),
         },
       },
     },

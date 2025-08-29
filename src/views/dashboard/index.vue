@@ -10,7 +10,7 @@
             />
             <div>
               <p>{{ greetings }}</p>
-              <p class="text-sm text-gray">今日天气晴朗，气温在15℃至25℃之间，东南风。</p>
+              <p class="text-sm text-gray">{{ weatherInfo }}</p>
             </div>
           </div>
         </el-col>
@@ -246,9 +246,12 @@ defineOptions({
   inheritAttrs: false,
 });
 import { useUserStore } from "@/store/modules/user.store";
+import DashboardAPI from "@/api/dashboard.api";
 
 const userStore = useUserStore();
 const date: Date = new Date();
+const weatherInfo = ref();
+
 const greetings = computed(() => {
   const hours = date.getHours();
   if (hours >= 6 && hours < 8) {
@@ -262,6 +265,15 @@ const greetings = computed(() => {
   } else {
     return "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
   }
+});
+
+const getDashboard = async () => {
+  const data = await DashboardAPI.get();
+  weatherInfo.value = data.weather;
+};
+
+onMounted(() => {
+  getDashboard();
 });
 </script>
 
