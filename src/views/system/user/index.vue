@@ -259,6 +259,7 @@ const rules = reactive({
   nickname: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
   password: [{ required: true, message: "密码不能为空", trigger: "blur" }],
   deptId: [{ required: true, message: "所属部门不能为空", trigger: "blur" }],
+  gender: [{ required: true, message: "性别不能为空", trigger: "blur" }],
   roleIds: [{ required: true, message: "用户角色不能为空", trigger: "blur" }],
   email: [
     {
