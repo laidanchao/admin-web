@@ -1,0 +1,6 @@
+
+export enum AUDIT_STATUS_ENUM {
+  "WAITING" = "WAITING",
+  "SUCCESS" = "SUCCESS",
+  "FAILED" = "FAILED",
+}
