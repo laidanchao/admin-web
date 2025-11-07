@@ -47,11 +47,19 @@
       <div class="mb-[10px]">
         <el-button
           v-hasPerm="['bigong:feed:export']"
-          type="warning"
+          type="primary"
           icon="download"
           @click="handleExport()"
         >
-          导出
+          导出含图片的excel（速度慢，最好一个一个导）
+        </el-button>
+        <el-button
+          v-hasPerm="['bigong:feed:export']"
+          type="warning"
+          icon="download"
+          @click="handleExport(true)"
+        >
+          导出只含图片地址的excel（速度极快，但需点击下载图片）
         </el-button>
       </div>
 
@@ -433,30 +441,25 @@ function handleAuditFailedClick(row: any) {
   }
 }
 
-async function handleExport() {
+async function handleExport(onlyUrl = false) {
   loading.value = true;
+  queryParams.onlyUrl=onlyUrl;
   const result = await FeedAPI.export(queryParams);
-  console.log(1);
 
   const blob = new Blob([result.data], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
-  console.log(2);
   const url = window.URL.createObjectURL(blob);
-  console.log(3);
   const link = document.createElement("a");
-  console.log(4);
   link.href = url;
   link.download = "export-data.xlsx";
   link.style.display = "none";
 
   document.body.appendChild(link);
-  console.log(5);
   link.click();
   document.body.removeChild(link);
-  console.log(6);
+
   window.URL.revokeObjectURL(url);
-  console.log(7);
   loading.value = false;
 }
 

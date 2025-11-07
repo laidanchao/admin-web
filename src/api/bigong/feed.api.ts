@@ -41,6 +41,7 @@ export interface FeedPageQuery extends PageQuery {
   auditStatus?: AUDIT_STATUS_ENUM;
   city?: string;
   serviceArea?: string;
+  onlyUrl?: boolean;
 }
 
 /**
