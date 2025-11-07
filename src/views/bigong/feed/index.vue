@@ -436,21 +436,27 @@ function handleAuditFailedClick(row: any) {
 async function handleExport() {
   loading.value = true;
   const result = await FeedAPI.export(queryParams);
+  console.log(1);
 
   const blob = new Blob([result.data], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
+  console.log(2);
   const url = window.URL.createObjectURL(blob);
+  console.log(3);
   const link = document.createElement("a");
+  console.log(4);
   link.href = url;
   link.download = "export-data.xlsx";
   link.style.display = "none";
 
   document.body.appendChild(link);
+  console.log(5);
   link.click();
   document.body.removeChild(link);
-
+  console.log(6);
   window.URL.revokeObjectURL(url);
+  console.log(7);
   loading.value = false;
 }
 

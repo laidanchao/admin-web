@@ -15,6 +15,7 @@ class FeedAPI extends BaseApi {
       responseType: "blob",
       data,
       method: "post",
+      timeout: 300000,
     });
   }
 
