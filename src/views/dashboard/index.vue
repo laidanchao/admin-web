@@ -6,7 +6,7 @@
           <div class="flex h-full items-center">
             <img
               class="w-20 h-20 mr-5 rounded-full"
-              :src="userStore.userInfo.avatar + '?imageView2/1/w/80/h/80'"
+              :src="userStore.userInfo.avatar"
             />
             <div>
               <p>{{ greetings }}</p>

@@ -105,8 +105,8 @@ const loading = ref(false); // 按钮 loading 状态
 const isCapslock = ref(false); // 是否大写锁定
 
 const loginFormData = ref<LoginFormData>({
-  username: "laidanchao",
-  password: "123123",
+  username: "",
+  password: "",
 });
 
 const loginRules = computed(() => {
