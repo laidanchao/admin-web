@@ -72,10 +72,23 @@
         @pagination="handleQuery"
         @page-change="handleQuery"
       >
+        <template #self-img-column="{ row }">
+          <el-image
+            :src="row.selfImgUrl"
+            style="width: 50px; height: 50px"
+            :preview-src-list="[row.selfImgUrl]"
+            fit="cover"
+            show-progress
+            :preview-teleported="true"
+          ></el-image>
+        </template>
         <template #audit-status-column="{ row }">
           <el-tag :type="auditStatusMap[row.auditStatus].tagType">
             {{ auditStatusMap[row.auditStatus].label }}
           </el-tag>
+        </template>
+        <template #visited-at-column="{ row }">
+          {{ row.visitedAt.replace("T", " ").replace("Z", "").replace(".000", "") }}
         </template>
         <!-- 操作列插槽 -->
         <template #operation="{ row }">
@@ -118,8 +131,6 @@
 
 <script setup lang="ts">
 import BaseTable from "@/components/BaseTable/index.vue";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 
 defineOptions({
   name: "Dict",
@@ -133,7 +144,6 @@ import { mapKeys } from "lodash-es";
 import { useDictStore } from "@/store";
 import FeedDialog from "@/views/bigong/feed/components/feed-dialog.vue";
 import { AUDIT_STATUS_ENUM } from "@/enums/bigong/feed.enum";
-import ClientAPI from "@/api/crm/client.api";
 
 const queryFormRef = ref();
 const auditStatusMap = ref();
@@ -316,12 +326,14 @@ const queryParams = reactive<FeedPageQuery>({
 
 // 表格列配置
 const columns = reactive([
-  { label: "姓名", prop: "realName", minWidth: 100 },
+  { label: "姓名", prop: "realName", minWidth: 80 },
   { label: "身份证", prop: "idNo", minWidth: 100 },
-  { label: "手机号", prop: "phone", minWidth: 100 },
-  { label: "城市", prop: "city", minWidth: 100 },
+  { label: "手机号", prop: "phone", minWidth: 80 },
+  { label: "城市", prop: "city", minWidth: 80 },
   { label: "服务区", prop: "serviceArea", minWidth: 100 },
   { label: "行驶方向", prop: "direction", minWidth: 100 },
+  { label: "访查时间", prop: "visitedAt", minWidth: 120, slot: "visited-at-column" },
+  { label: "自我验证", prop: "selfImgUrl", minWidth: 120, slot: "self-img-column" },
   { label: "审核状态", prop: "auditStatus", minWidth: 100, slot: "audit-status-column" },
   { label: "创建时间", prop: "createdAt", minWidth: 120 },
   { label: "审核", minWidth: 150, slot: "operation", fixed: "right" },
@@ -341,6 +353,8 @@ function handleQuery() {
       "city",
       "serviceArea",
       "direction",
+      "selfImgUrl",
+      "visitedAt",
       "auditStatus",
       "createdAt",
     ],
@@ -443,7 +457,7 @@ function handleAuditFailedClick(row: any) {
 
 async function handleExport(onlyUrl = false) {
   loading.value = true;
-  queryParams.onlyUrl=onlyUrl;
+  queryParams.onlyUrl = onlyUrl;
   const result = await FeedAPI.export(queryParams);
 
   const blob = new Blob([result.data], {

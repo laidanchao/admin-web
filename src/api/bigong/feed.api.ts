@@ -65,6 +65,9 @@ export interface FeedPageVO {
   serviceArea: string;
 
   direction: string;
+  visitedAt: Date;
+  selfImgUrl: string;
+  createdAt: Date;
 
   auditStatus: AUDIT_STATUS_ENUM;
 }
