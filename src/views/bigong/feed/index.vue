@@ -357,6 +357,7 @@ function handleQuery() {
       "visitedAt",
       "auditStatus",
       "createdAt",
+      "comment",
     ],
     search: {
       $and: [

@@ -54,9 +54,11 @@
     <!--        <el-form-item label="提交时间" style="width: 300px">-->
     <!--          <el-input v-model="formData.createdAt" />-->
     <!--        </el-form-item>-->
-    <!--        <el-form-item label="评价" prop="comment" style="width: 600px">-->
-    <!--          <el-input v-model="formData.comment" type="textarea" />-->
-    <!--        </el-form-item>-->
+
+    <el-form-item label="评价" style="width: 100%"></el-form-item>
+    <el-form-item label="" style="width: 100%">
+      <el-input v-model="formData.comment" type="textarea" :rows="5" disabled />
+    </el-form-item>
     <el-table :data="tableData" style="width: 100%" height="600px">
       <el-table-column prop="areaName" label="区域" width="180" />
       <el-table-column prop="locationName" label="位置" width="180" />
@@ -71,7 +73,7 @@
             v-if="!row.isVideo"
             :src="row.fileUrl"
             style="width: 150px; height: 150px"
-            :preview-src-list="imgList"
+            :preview-src-list="[row.fileUrl]"
             fit="cover"
             show-progress
             :preview-teleported="true"
@@ -117,6 +119,7 @@ const open = (data: FeedPageVO, details: any[], array1: [], array2: []) => {
   // formData.value = { ...data };
   tableData.value = [...details];
   imgList.value = details.filter((f) => f.fileUrl && !f.isVideo).map((m) => m.fileUrl);
+  formData.value = data;
   // cityArray.value = [...array1];
   // areaArray.value = [...array2];
   dialog.visible = true;

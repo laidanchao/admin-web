@@ -70,4 +70,6 @@ export interface FeedPageVO {
   createdAt: Date;
 
   auditStatus: AUDIT_STATUS_ENUM;
+
+  comment: string;
 }
