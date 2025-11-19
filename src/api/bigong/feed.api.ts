@@ -25,6 +25,18 @@ class FeedAPI extends BaseApi {
       method: "get",
     });
   }
+
+  delete(id) {
+    return request<any, any>({
+      url: `${FEED_BASE_URL}/delete`,
+      responseType: "blob",
+      data: {
+        id,
+      },
+      method: "post",
+      timeout: 300000,
+    });
+  }
 }
 
 export default new FeedAPI();

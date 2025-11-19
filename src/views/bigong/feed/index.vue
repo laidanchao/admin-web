@@ -121,6 +121,15 @@
           >
             不通过
           </el-button>
+          <el-button
+            type="info"
+            link
+            size="small"
+            icon="delete"
+            @click.stop="handleDeleteClick(row)"
+          >
+            删除
+          </el-button>
         </template>
       </BaseTable>
     </el-card>
@@ -455,6 +464,34 @@ function handleAuditFailedClick(row: any) {
     );
   }
 }
+
+/**
+ * 删除
+ * @param row
+ */
+function handleDeleteClick(row: any) {
+  if (row.id) {
+    ElMessageBox.confirm(`确认删除吗?`, "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    }).then(
+      () => {
+        loading.value = true;
+        FeedAPI.delete(row.id)
+          .then(() => {
+            ElMessage.success("删除成功");
+            handleResetQuery();
+          })
+          .finally(() => (loading.value = false));
+      },
+      () => {
+        ElMessage.info("取消删除");
+      }
+    );
+  }
+}
+
 
 async function handleExport(onlyUrl = false) {
   loading.value = true;
