@@ -92,16 +92,10 @@
         </template>
         <!-- 操作列插槽 -->
         <template #operation="{ row }">
-          <el-button
-            type="warning"
-            link
-            icon="view"
-            @click.stop="handleViewClick(row)"
-          >
+          <el-button type="warning" link icon="view" @click.stop="handleViewClick(row)">
             查看
           </el-button>
           <el-button
-            v-if="[AUDIT_STATUS_ENUM.WAITING, AUDIT_STATUS_ENUM.FAILED].includes(row.auditStatus)"
             type="primary"
             link
             size="small"
@@ -111,7 +105,6 @@
             通过
           </el-button>
           <el-button
-            v-if="[AUDIT_STATUS_ENUM.WAITING].includes(row.auditStatus)"
             type="danger"
             link
             size="small"
@@ -335,16 +328,16 @@ const queryParams = reactive<FeedPageQuery>({
 // 表格列配置
 const columns = reactive([
   { label: "姓名", prop: "realName", minWidth: 80 },
-  { label: "身份证", prop: "idNo", minWidth: 100 },
+  { label: "身份证", prop: "idNo", minWidth: 120 },
   { label: "手机号", prop: "phone", minWidth: 80 },
   { label: "城市", prop: "city", minWidth: 80 },
   { label: "服务区", prop: "serviceArea", minWidth: 100 },
-  { label: "行驶方向", prop: "direction", minWidth: 100 },
-  { label: "访查时间", prop: "visitedAt", minWidth: 120, slot: "visited-at-column" },
+  { label: "行驶方向", prop: "direction", minWidth: 80 },
+  { label: "访查时间", prop: "visitedAt", minWidth: 80, slot: "visited-at-column" },
   { label: "自我验证", prop: "selfImgUrl", minWidth: 120, slot: "self-img-column" },
-  { label: "审核状态", prop: "auditStatus", minWidth: 100, slot: "audit-status-column" },
-  { label: "创建时间", prop: "createdAt", minWidth: 120 },
-  { label: "审核", minWidth: 150, slot: "operation", fixed: "right" },
+  { label: "审核状态", prop: "auditStatus", minWidth: 90, slot: "audit-status-column" },
+  { label: "创建时间", prop: "createdAt", minWidth: 80 },
+  { label: "审核", minWidth: 180, slot: "operation", fixed: "right" },
 ]);
 
 const tableData = ref<FeedPageVO[]>();
@@ -490,7 +483,6 @@ function handleDeleteClick(row: any) {
     );
   }
 }
-
 
 async function handleExport(onlyUrl = false) {
   loading.value = true;
