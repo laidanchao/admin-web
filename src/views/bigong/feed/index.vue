@@ -93,7 +93,6 @@
         <!-- 操作列插槽 -->
         <template #operation="{ row }">
           <el-button
-            v-if="[AUDIT_STATUS_ENUM.WAITING, AUDIT_STATUS_ENUM.FAILED].includes(row.auditStatus)"
             type="warning"
             link
             icon="view"
